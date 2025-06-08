@@ -1,0 +1,156 @@
+[
+    {
+        "itemId": "100812a8",
+        "title": "-Short answer",
+        "type": "SHORT_ANSWER",
+        "questionId": 1021243155,
+        "questionText": {}
+    },
+    {
+        "itemId": "405a3d7a",
+        "title": "-Paragraph",
+        "type": "PARAGRAPH",
+        "questionId": 1184876989,
+        "questionText": {
+            "paragraph": true
+        }
+    },
+    {
+        "itemId": "2d817e03",
+        "title": "-Multiple Choice",
+        "type": "RADIO",
+        "questionId": 1166587114,
+        "options": [
+            {
+                "value": "Option 1"
+            },
+            {
+                "value": "Option 2"
+            },
+            {
+                "value": "Option 3"
+            },
+            {
+                "isOther": true
+            }
+        ]
+    },
+    {
+        "itemId": "677876d4",
+        "title": "-Checkbox",
+        "type": "CHECKBOX",
+        "questionId": 894418696,
+        "options": [
+            {
+                "value": "Option 1"
+            },
+            {
+                "value": "Option 2"
+            },
+            {
+                "value": "Option 3"
+            },
+            {
+                "isOther": true
+            }
+        ]
+    },
+    {
+        "itemId": "28624453",
+        "title": "-Dropdown",
+        "type": "DROP_DOWN",
+        "questionId": 784013799,
+        "options": [
+            {
+                "value": "Option 1"
+            },
+            {
+                "value": "Option 2"
+            },
+            {
+                "value": "Option 3"
+            }
+        ]
+    },
+    {
+        "itemId": "065f9a4b",
+        "title": "-Linear scale",
+        "type": "LINEAR_SCALE",
+        "questionId": 1530946951,
+        "options": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+        "scale": {
+            "lowLabel": "bad",
+            "highLabel": "good"
+        }
+    },
+    {
+        "itemId": "36e54d49",
+        "title": "-Ratings",
+        "type": "RATING",
+        "questionId": 1040146335,
+        "rating": {
+            "options": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "iconType": "STAR"
+        }
+    },
+    {
+        "itemId": "3b1cd726",
+        "title": "-Multiple-choice grid",
+        "type": "MULTIPLE_CHOICE_GRID",
+        "questions": [
+            {
+                "questionId": 279661583,
+                "title": "Row 1"
+            },
+            {
+                "questionId": 101083632,
+                "title": "Row 2"
+            },
+            {
+                "questionId": 2028032672,
+                "title": "Row 3"
+            }
+        ],
+        "options": [
+            "Column 1",
+            "Column 2",
+            "Column 3"
+        ]
+    },
+    {
+        "itemId": "69a40a49",
+        "title": "-Tick box grid",
+        "type": "CHECKBOX_GRID",
+        "questions": [
+            {
+                "questionId": 452900931,
+                "title": "Row 1"
+            },
+            {
+                "questionId": 946924013,
+                "title": "Row 2"
+            },
+            {
+                "questionId": 218381560,
+                "title": "Row 3"
+            }
+        ],
+        "options": [
+            "Column 1",
+            "Column 2",
+            "Column 3"
+        ]
+    }
+]

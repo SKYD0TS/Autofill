@@ -1,0 +1,209 @@
+{
+    "101083632": [
+        {
+            "option": "Column 1",
+            "chance": 51
+        },
+        {
+            "option": "Column 2",
+            "chance": 52
+        },
+        {
+            "option": "Column 3",
+            "chance": 53
+        }
+    ],
+    "218381560": [
+        {
+            "option": "Column 1",
+            "chance": 91
+        },
+        {
+            "option": "Column 2",
+            "chance": 92
+        },
+        {
+            "option": "Column 3",
+            "chance": 93
+        }
+    ],
+    "279661583": [
+        {
+            "option": "Column 1",
+            "chance": 41
+        },
+        {
+            "option": "Column 2",
+            "chance": 42
+        },
+        {
+            "option": "Column 3",
+            "chance": 43
+        }
+    ],
+    "452900931": [
+        {
+            "option": "Column 1",
+            "chance": 71
+        },
+        {
+            "option": "Column 2",
+            "chance": 72
+        },
+        {
+            "option": "Column 3",
+            "chance": 73
+        }
+    ],
+    "784013799": [
+        {
+            "option": "Option 1",
+            "chance": 0.1
+        },
+        {
+            "option": "Option 2",
+            "chance": 0.11
+        },
+        {
+            "option": "Option 3",
+            "chance": 0.12
+        }
+    ],
+    "894418696": [
+        {
+            "option": "Option 1",
+            "chance": 0.08
+        },
+        {
+            "option": "Option 2",
+            "chance": 0.07
+        },
+        {
+            "option": "Option 3",
+            "chance": 0.06
+        },
+        {
+            "option": "op4",
+            "chance": 0.05,
+            "isOther": true
+        },
+        {
+            "option": "New Option",
+            "chance": 0.06,
+            "isOther": true
+        }
+    ],
+    "946924013": [
+        {
+            "option": "Column 1",
+            "chance": 81
+        },
+        {
+            "option": "Column 2",
+            "chance": 82
+        },
+        {
+            "option": "Column 3",
+            "chance": 83
+        }
+    ],
+    "1021243155": [
+        {
+            "option": "sa",
+            "chance": 1
+        },
+        {
+            "option": "sa2",
+            "chance": 2,
+            "isOther": true
+        }
+    ],
+    "1040146335": [
+        {
+            "option": 1,
+            "chance": 0.21
+        },
+        {
+            "option": 2,
+            "chance": 0.22
+        },
+        {
+            "option": 3,
+            "chance": 0.23
+        },
+        {
+            "option": 4,
+            "chance": 0.24
+        },
+        {
+            "option": 5,
+            "chance": 0.25
+        }
+    ],
+    "1166587114": [
+        {
+            "option": "Option 1",
+            "chance": 0.01
+        },
+        {
+            "option": "Option 2",
+            "chance": 0.02
+        },
+        {
+            "option": "Option 3",
+            "chance": 0.03
+        },
+        {
+            "option": "ass",
+            "chance": 0.04,
+            "isOther": true
+        }
+    ],
+    "1184876989": [
+        {
+            "option": "pa",
+            "chance": 3
+        },
+        {
+            "option": "pa2",
+            "chance": 4,
+            "isOther": true
+        }
+    ],
+    "1530946951": [
+        {
+            "option": 1,
+            "chance": 0.2
+        },
+        {
+            "option": 2,
+            "chance": 0.3
+        },
+        {
+            "option": 3,
+            "chance": 0.4
+        },
+        {
+            "option": 4,
+            "chance": 0.5
+        },
+        {
+            "option": 5,
+            "chance": 0.6
+        }
+    ],
+    "2028032672": [
+        {
+            "option": "Column 1",
+            "chance": 61
+        },
+        {
+            "option": "Column 2",
+            "chance": 62
+        },
+        {
+            "option": "Column 3",
+            "chance": 63
+        }
+    ]
+}
