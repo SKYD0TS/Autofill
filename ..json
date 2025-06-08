@@ -1,209 +1,155 @@
 {
     "101083632": [
         {
-            "option": "Column 1",
-            "chance": 51
-        },
-        {
-            "option": "Column 2",
-            "chance": 52
-        },
-        {
-            "option": "Column 3",
-            "chance": 53
+            "answer": "Column 2",
+            "chance": 30,
+            "independentChance": false
         }
     ],
     "218381560": [
         {
-            "option": "Column 1",
-            "chance": 91
+            "answer": "Column 1",
+            "chance": 13,
+            "independentChance": true
         },
         {
-            "option": "Column 2",
-            "chance": 92
-        },
-        {
-            "option": "Column 3",
-            "chance": 93
+            "answer": "Column 2",
+            "chance": 81,
+            "independentChance": true
         }
     ],
     "279661583": [
         {
-            "option": "Column 1",
-            "chance": 41
-        },
-        {
-            "option": "Column 2",
-            "chance": 42
-        },
-        {
-            "option": "Column 3",
-            "chance": 43
+            "answer": "Column 3",
+            "chance": 72,
+            "independentChance": false
         }
     ],
     "452900931": [
         {
-            "option": "Column 1",
-            "chance": 71
+            "answer": "Column 1",
+            "chance": 19,
+            "independentChance": true
         },
         {
-            "option": "Column 2",
-            "chance": 72
+            "answer": "Column 2",
+            "chance": 53,
+            "independentChance": true
         },
         {
-            "option": "Column 3",
-            "chance": 73
+            "answer": "Column 3",
+            "chance": 51,
+            "independentChance": true
         }
     ],
     "784013799": [
         {
-            "option": "Option 1",
-            "chance": 0.1
-        },
-        {
-            "option": "Option 2",
-            "chance": 0.11
-        },
-        {
-            "option": "Option 3",
-            "chance": 0.12
+            "answer": "Option 2",
+            "chance": 86,
+            "independentChance": false
         }
     ],
     "894418696": [
         {
-            "option": "Option 1",
-            "chance": 0.08
+            "answer": "Option 1",
+            "chance": 100,
+            "independentChance": true
         },
         {
-            "option": "Option 2",
-            "chance": 0.07
+            "answer": "Option 2",
+            "chance": 100,
+            "independentChance": true
         },
         {
-            "option": "Option 3",
-            "chance": 0.06
-        },
-        {
-            "option": "op4",
-            "chance": 0.05,
-            "isOther": true
-        },
-        {
-            "option": "New Option",
-            "chance": 0.06,
-            "isOther": true
+            "answer": "Option 3",
+            "chance": 100,
+            "independentChance": true
         }
     ],
     "946924013": [
         {
-            "option": "Column 1",
-            "chance": 81
+            "answer": "Column 1",
+            "chance": 40,
+            "independentChance": true
         },
         {
-            "option": "Column 2",
-            "chance": 82
+            "answer": "Column 2",
+            "chance": 70,
+            "independentChance": true
         },
         {
-            "option": "Column 3",
-            "chance": 83
+            "answer": "Column 3",
+            "chance": 23,
+            "independentChance": true
         }
     ],
     "1021243155": [
         {
-            "option": "sa",
-            "chance": 1
-        },
-        {
-            "option": "sa2",
-            "chance": 2,
-            "isOther": true
+            "answer": "",
+            "chance": 0,
+            "independentChance": false
         }
     ],
     "1040146335": [
         {
-            "option": 1,
-            "chance": 0.21
-        },
-        {
-            "option": 2,
-            "chance": 0.22
-        },
-        {
-            "option": 3,
-            "chance": 0.23
-        },
-        {
-            "option": 4,
-            "chance": 0.24
-        },
-        {
-            "option": 5,
-            "chance": 0.25
+            "answer": 5,
+            "chance": 80,
+            "independentChance": false
         }
     ],
     "1166587114": [
         {
-            "option": "Option 1",
-            "chance": 0.01
-        },
-        {
-            "option": "Option 2",
-            "chance": 0.02
-        },
-        {
-            "option": "Option 3",
-            "chance": 0.03
-        },
-        {
-            "option": "ass",
-            "chance": 0.04,
-            "isOther": true
+            "answer": "Option 1",
+            "chance": 100,
+            "independentChance": false
         }
     ],
     "1184876989": [
         {
-            "option": "pa",
-            "chance": 3
-        },
-        {
-            "option": "pa2",
-            "chance": 4,
-            "isOther": true
+            "answer": "",
+            "chance": 0,
+            "independentChance": false
         }
     ],
     "1530946951": [
         {
-            "option": 1,
-            "chance": 0.2
-        },
-        {
-            "option": 2,
-            "chance": 0.3
-        },
-        {
-            "option": 3,
-            "chance": 0.4
-        },
-        {
-            "option": 4,
-            "chance": 0.5
-        },
-        {
-            "option": 5,
-            "chance": 0.6
+            "answer": 5,
+            "chance": 84,
+            "independentChance": false
         }
     ],
     "2028032672": [
         {
-            "option": "Column 1",
-            "chance": 61
-        },
-        {
-            "option": "Column 2",
-            "chance": 62
-        },
-        {
-            "option": "Column 3",
-            "chance": 63
+            "answer": "Column 2",
+            "chance": 52,
+            "independentChance": false
         }
     ]
 }
+
+
+"/result?entry.101083632=Column+1
+&entry.218381560=Column+1
+&entry.218381560=Column+2
+&entry.218381560=Column+3
+&entry.279661583=Column+1
+&entry.452900931=Column+1
+&entry.452900931=Column+2
+&entry.452900931=Column+3
+&entry.784013799=Option+1
+&entry.894418696=Option+1
+&entry.894418696=Option+2
+&entry.894418696=Option+3
+&entry.946924013=Column+1
+&entry.946924013=Column+2
+&entry.946924013=Column+3
+&entry.1021243155=The
+&entry.1040146335=5
+&entry.1166587114.other_option_response=Op5
+&entry.1166587114=__other_option__
+&entry.1184876989=Par2
+&entry.1530946951=5
+&entry.2028032672=Column+2"
+
+https://docs.google.com/forms/d/e/1FAIpQLSdi8v0DHEWvSg-HkPbOopq5ej79pba_njR1pYhfbjNCbOld0Q/formResponse?entry.101083632=Column+1&entry.218381560=Column+1&entry.218381560=Column+2&entry.218381560=Column+3&entry.279661583=Column+1&entry.452900931=Column+1&entry.452900931=Column+2&entry.452900931=Column+3&entry.784013799=Option+1&entry.894418696=Option+1&entry.894418696=Option+2&entry.894418696=Option+3&entry.946924013=Column+1&entry.946924013=Column+2&entry.946924013=Column+3&entry.1021243155=The&entry.1040146335=5&entry.1166587114.other_option_response=Op5&entry.1166587114=__other_option__&entry.1184876989=Par2&entry.1530946951=5&entry.2028032672=Column+2
+https://docs.google.com/forms/d/e/1FAIpQLSdi8v0DHEWvSg-HkPbOopq5ej79pba_njR1pYhfbjNCbOld0Q/formResponse?entry.101083632=Column+1&entry.218381560=Column+1&entry.218381560=Column+2&entry.218381560=Column+3&entry.279661583=Column+1&entry.452900931=Column+1&entry.452900931=Column+2&entry.452900931=Column+3&entry.784013799=Option+2&entry.894418696=Option+1&entry.894418696=Option+2&entry.894418696=Option+3&entry.894418696.other_option_response=CB&entry.894418696=__other_option__&entry.946924013=Column+1&entry.946924013=Column+2&entry.946924013=Column+3&entry.1021243155=what&entry.1040146335=5&entry.1166587114=Option+2&entry.1184876989=Par2&entry.1530946951=5&entry.2028032672=Column+1"
