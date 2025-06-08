@@ -83,6 +83,43 @@ export default function Home() {
         });
     };
 
+    // const updateChance = (qid, index, newValue) => {
+    //     setData(prev => {
+    //     const group = [...prev[qid]];
+    //     const parsedValue = parseFloat(newValue, 2);
+
+    //     // Check if options are dependent
+    //     const isDependent = group.every(opt => !opt.independentChance);
+
+    //     if (!isDependent) {
+    //         // Fallback to normal update
+    //         group[index] = { ...group[index], chance: parsedValue };
+    //         return { ...prev, [qid]: group };
+    //     }
+
+    //     // Total we want to maintain (e.g., 1.0)
+    //     const TOTAL = 100;
+
+    //     // Set new value to selected index
+    //     group[index] = { ...group[index], chance: parsedValue };
+
+    //     // Sum of other chances
+    //     const otherIndices = group.map((_, i) => i).filter(i => i !== index);
+    //     const remaining = TOTAL - parsedValue;
+    //     const oldSum = otherIndices.reduce((sum, i) => sum + group[i].chance, 0);
+
+    //     // Redistribute proportionally
+    //     otherIndices.forEach(i => {
+    //         const old = group[i].chance;
+    //         const newChance = oldSum > 0 ? (old / oldSum) * remaining : remaining / otherIndices.length;
+    //         group[i] = { ...group[i], chance: parseFloat(newChance.toFixed(6)) };
+    //     });
+
+    //     return { ...prev, [qid]: group };
+    //     });
+    // };
+
+
     const updateOption = (qid, index, newValue) => {
         setData(prev => {
             const updated = [...prev[qid]];
@@ -91,20 +128,20 @@ export default function Home() {
         });
     };
 
-    const addOption = (qid, independentChance=false) => {
-        if(independentChance){
+    const addOption = (qid, independentChance = false) => {
+        const canOther = items.find((i) => i.questionId == qid).questionText ? false : true
+        if (independentChance) {
             setData(prev => {
-                const updated = [...prev[qid], { option: 'New Option', chance: 0, isOther:true, independentChance:true }];
+                const updated = [...prev[qid], { option: 'New Option', chance: 0, isOther: canOther, independentChance: true }];
                 return { ...prev, [qid]: updated };
             });
-        }else{
+        } else {
             setData(prev => {
-                const updated = [...prev[qid], { option: 'New Option', chance: 0, isOther:true }];
+                const updated = [...prev[qid], { option: 'New Option', chance: 0, isOther: canOther }];
                 return { ...prev, [qid]: updated };
             });
         }
     };
-
 
     useEffect(() => {
         if (!items || items.length === 0) return;
@@ -116,13 +153,13 @@ export default function Home() {
 
             if (item.type === 'RADIO' || item.type === 'CHECKBOX' || item.type === 'DROP_DOWN') {
                 const options = item.options?.filter((i) => i.value).map(opt => opt.value) || [];
-                if(item.type == "CHECKBOX"){
+                if (item.type == "CHECKBOX") {
                     result[`${baseQid}`] = options.map(opt => ({
                         option: opt,
                         chance: 0,
                         independentChance: true
                     }));
-                }else{
+                } else {
                     result[`${baseQid}`] = options.map(opt => ({
                         option: opt,
                         chance: 0
@@ -138,13 +175,13 @@ export default function Home() {
                 const options = item.options || [];
                 item.questions.forEach((r) => {
                     const qid = r.questionId;
-                    if(item.type == 'CHECKBOX_GRID'){    
+                    if (item.type == 'CHECKBOX_GRID') {
                         result[`${qid}`] = options.map(opt => ({
                             option: opt,
                             chance: 0,
-                            independentChance:true
+                            independentChance: true
                         }));
-                    }else{
+                    } else {
                         result[`${qid}`] = options.map(opt => ({
                             option: opt,
                             chance: 0,
@@ -167,53 +204,41 @@ export default function Home() {
     // submit handler
     const onSubmit = async (e) => {
         e.preventDefault()
-        console.log(data)
-        // const formData = Object.keys(data).reduce((acc, key) => {
-        //     if (key.includes("chances")) return acc
-        //     const [qid, suffix] = key.split('_');
-        //     let answers = []
-        //     data[key].forEach((opt, idx) => {
-        //         answers.push({
-        //             answer: opt,
-        //             chance: data[`${qid}_chances`][idx],
-        //         })
-        //     })
-        //     acc[qid] = { ...answers }
-        //     return acc
-        // }, {});
         const formData = Object.entries(data).reduce((acc, [qid, entries]) => {
-            // acc[qid] = entries.map(entry => ({
-            //     answer: entry.option,
-            //     chance: entry.chance
-            // }));
             acc[qid] = entries.map(entry => ({
-                answer: entry.option,
+                option: entry.option,
                 chance: entry.chance,
+                isOther: entry.isOther || false,
                 independentChance: entry.independentChance || false
             }));
 
             return acc;
         }, {});
+        console.log({ formData, data })
+        console.log(pickAll(formData))
 
+        const pickedUrl = generatePickedURL(pickAll(formData));
+        console.log({ pickedUrl })
+        // window.location.href = pickedUrl;
 
-        try {
-            const response = await fetch('/api/submit-form', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
+        // try {
+        //     const response = await fetch('/api/submit-form', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json'
+        //         },
+        //         body: JSON.stringify(formData)
+        //     });
 
-            if (response.ok) {
-                const result = await response.json();
-                console.log('Form submitted successfully:', result);
-            } else {
-                console.error('Form submission failed:', response.statusText);
-            }
-        } catch (error) {
-            console.error('Error submitting form:', error);
-        }
+        //     if (response.ok) {
+        //         const result = await response.json();
+        //         console.log('Form submitted successfully:', result);
+        //     } else {
+        //         console.error('Form submission failed:', response.statusText);
+        //     }
+        // } catch (error) {
+        //     console.error('Error submitting form:', error);
+        // }
 
     };
 
@@ -260,8 +285,20 @@ export default function Home() {
                                                 ></textarea>
                                             }
                                             <input
-                                                type="number"
                                                 value={opt.chance}
+                                                type="range"
+                                                min="0"
+                                                max="100"
+                                                placeholder="Chance"
+                                                onChange={(e) => updateChance(qid, idx, e.target.value)}
+                                                tabIndex={-1}
+                                            />
+                                            <input
+                                                value={opt.chance}
+                                                type="number"
+                                                min="0"
+                                                max="100"
+                                                placeholder="Chance"
                                                 onChange={(e) => updateChance(qid, idx, e.target.value)}
                                             />
                                         </li>
@@ -285,22 +322,45 @@ export default function Home() {
 
                                         const values = data[qid] || [];
                                         return (
-                                            <li key={qid}>
+                                            <li key={qid} >
                                                 <label htmlFor="">{q.title} {q.questionId}</label>
                                                 <ul>
                                                     {/* {options.map((opt, idx) => */}
                                                     {values.map((opt, idx) =>
-                                                        <li key={`${qid}_${idx}`}>
+                                                        <li key={`${qid}_${idx}`} style={{ display: 'flex', gap: '1rem' }}>
                                                             <input
                                                                 value={opt.option}
                                                                 readOnly={!opt.isOther}
                                                                 onChange={(e) => {
-                                                                if (opt.isOther) {
-                                                                    return updateOption(qid, idx, e.target.value);
-                                                                }}}
+                                                                    if (opt.isOther) {
+                                                                        return updateOption(qid, idx, e.target.value);
+                                                                    }
+                                                                }}
+                                                                tabIndex={opt.isOther ? 0 : -1}
+                                                                style={{
+                                                                    width: '150px',
+                                                                    border: 'none',
+                                                                    background: 'transparent',
+                                                                    fontSize: '1rem',
+                                                                    padding: '0.25rem',
+                                                                    minWidth: '150px',
+                                                                    outline: opt.isOther ? '1px solid lightgray' : 'none',
+                                                                    cursor: opt.isOther ? 'text' : 'default'
+                                                                }}
                                                             />
                                                             <input
                                                                 value={opt.chance}
+                                                                type="range"
+                                                                min="0"
+                                                                max="100"
+                                                                placeholder="Chance"
+                                                                onChange={(e) => updateChance(qid, idx, e.target.value)}
+                                                                tabIndex={-1}
+                                                            />
+                                                            <input
+                                                                value={opt.chance}
+                                                                min="0"
+                                                                max="100"
                                                                 type="number"
                                                                 placeholder="Chance"
                                                                 onChange={(e) => updateChance(qid, idx, e.target.value)}
@@ -309,8 +369,8 @@ export default function Home() {
                                                     )}
                                                 </ul>
                                                 {item.options.find((q) => q.isOther == "true") ?
-                                                    <button type="button" onClick={() => addOption(qid)}>+ Add Option</button>    
-                                                : null}
+                                                    <button type="button" onClick={() => addOption(qid)}>+ Add Option</button>
+                                                    : null}
                                             </li>
                                         )
                                     })}
@@ -333,16 +393,35 @@ export default function Home() {
                                                 value={opt.option}
                                                 readOnly={!opt.isOther}
                                                 onChange={(e) => {
-                                                if (opt.isOther) {
-                                                    return updateOption(qid, idx, e.target.value);
-                                                }}}
-                                                style={{ width: '150px' }}
+                                                    if (opt.isOther) {
+                                                        return updateOption(qid, idx, e.target.value);
+                                                    }
+                                                }}
+                                                tabIndex={opt.isOther ? 0 : -1}
+                                                style={{
+                                                    width: '150px',
+                                                    border: 'none',
+                                                    background: 'transparent',
+                                                    fontSize: '1rem',
+                                                    padding: '0.25rem',
+                                                    minWidth: '150px',
+                                                    outline: opt.isOther ? '1px solid lightgray' : 'none',
+                                                    cursor: opt.isOther ? 'text' : 'default'
+                                                }}
+                                            />
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="100"
+                                                value={opt.chance}
+                                                onChange={(e) => updateChance(qid, idx, e.target.value)}
+                                                style={{ width: '80px' }}
+                                                tabIndex={-1}
                                             />
                                             <input
                                                 type="number"
-                                                step="0.01"
                                                 min="0"
-                                                max="1"
+                                                max="100"
                                                 value={opt.chance}
                                                 onChange={(e) => updateChance(qid, idx, e.target.value)}
                                                 style={{ width: '80px' }}
@@ -352,7 +431,7 @@ export default function Home() {
                                 })}
                             </ul>
                             {item.options.find((q) => q.isOther == true) ?
-                                <button type="button" onClick={() => addOption(qid,item.type==="CHECKBOX"?true:false)}>+ Add Option</button>
+                                <button type="button" onClick={() => addOption(qid, item.type === "CHECKBOX" ? true : false)}>+ Add Option</button>
                                 : null}
                         </div>
                     );
@@ -438,3 +517,57 @@ function restructureFormData(originalData) {
         return null;
     }).filter(item => item !== null);
 }
+
+function independentPick(options) {
+    return options.filter(opt => Math.random() < opt.chance);
+}
+
+function weightedPick(options) {
+    const total = options.reduce((sum, o) => sum + o.chance, 0);
+    const rand = Math.random() * total;
+    let acc = 0;
+
+    for (const opt of options) {
+        acc += opt.chance;
+        if (rand <= acc) return opt;
+    }
+
+    // fallback (shouldn't happen unless total = 0)
+    return options[0];
+}
+
+function pickAll(data) {
+    const result = {};
+
+    for (const [qid, options] of Object.entries(data)) {
+        const isIndependent = options.some(opt => opt.independentChance === true);
+
+        if (isIndependent) {
+            result[qid] = independentPick(options);
+        } else {
+            result[qid] = [weightedPick(options)];
+        }
+    }
+
+    return result;
+}
+
+const generatePickedURL = (data) => {
+    const params = new URLSearchParams();
+
+    Object.entries(data).forEach(([qid, entries]) => {
+        entries.forEach(entry => {
+            if (entry.chance > 0) {
+                if (entry.isOther) {
+                    params.append(`entry.${qid}.other_option_response`, entry.option);
+                    params.append(`entry.${qid}`, "__other_option__");
+                } else {
+                    params.append(`entry.${qid}`, entry.option);
+                }
+            }
+        });
+    });
+
+    return `/result?${params.toString()}`;
+};
+
