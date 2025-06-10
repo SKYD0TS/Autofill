@@ -4,11 +4,29 @@ import { useEffect, useState } from "react";
 import LoginButton from "@/components/GoogleIO/OauthLoginButton";
 import LogoutButton from "@/components/GoogleIO/OauthLogoutButton";
 import '@/app/autofill.css';
+import { redirect } from "next/navigation";
 
 
 export default function Home() {
     const { data: session, status } = useSession();
+    const [formInput, setFormInput] = useState({name:"form-input", value:""})
+    const [formInputIsValid, setFormInputIsValid] = useState(2)
     // Handle case when there is a session
+
+    function handleFormInputChange(value){
+        setFormInput(prev=>{
+            return { ...prev, value:value };
+        })
+    }
+    useEffect(()=>{
+        if(formInput.value.includes("docs.google.com")){
+            console.log(formInput)
+            setFormInputIsValid(1)
+            redirect(`/testform?formurl="${formInput.value}"`)
+        }else if(formInput.value){
+            setFormInputIsValid(0)
+        }
+    },[formInput])
     return (
         <div className="container">
             <div className="top-half">
@@ -35,12 +53,15 @@ export default function Home() {
                                 <LoginButton />
                             </div>
                     }
+                    {/* <div>account</div> */}
                 </div>
 
                 <main className="hero">
                     <h1>Make your life easier with <strong>Autofill</strong></h1>
                     <p className="tagline">Finish your questionere in just one click</p>
-                    <input type="text" placeholder="Ketik link Google Form Anda disini" className="form-input" />
+                    <input type="text" name={formInput.name} value={formInput.value} onChange={(e)=>handleFormInputChange(e.target.value, formInput.name)} placeholder="Ketik link Google Form Anda disini" className="form-input" />
+                    <p>{formInputIsValid==1?
+                            "link valid":formInputIsValid==0?"invalid link":null}</p>
                     <div className="arrow-down"><a href="#features"><i data-feather="circle"></i></a></div>
                 </main>
             </div>

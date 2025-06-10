@@ -4,13 +4,44 @@ import { useState, useEffect, useMemo } from "react";
 import LogoutButton from "@/components/GoogleIO/OauthLogoutButton";
 
 import * as QuestionComponents from '@/components/FormComponent';
-const formData = require('@/data/formData.json');
+import { redirect, useRouter, useSearchParams } from "next/navigation";
+// const formData = require('@/data/formData.json');
 
 export default function Home() {
-    const items = useMemo(() => restructureFormData(formData), [formData]);
+    // const items = useMemo(() => restructureFormData(formData), [formData]);
     const { data: session, SessionStatus } = useSession()
     const [data, setData] = useState({});
+    const [formData, setFormData] = useState();
+    const [items, setItems] = useState([]);
+    // const router = useRouter();
+    // const formurl = router.query.formurl; 
+    const searchParams = useSearchParams()
+    const formurl = searchParams.get('formurl')
+    useEffect(() => {
+        if (session && session?.accessToken && !formData) {
+            console.log(session)
+            const fetchGoogleForm = async () => {
+                try {
+                    const res = await fetch(`/api/google-form?accessToken=${session.accessToken}&formurl=${formurl}`);
+                    console.log('FETCH:::', `/api/google-form?accessToken=${session.accessToken}&formurl=${formurl}`)
+                    const data = await res.json();
+                    setFormData(data);
+                    // console.log(data)
+                } catch (error) {
+                    console.error('Error fetching form data:' + error);
+                }
+            };
 
+            fetchGoogleForm();
+        }
+    }, [session]);
+    useEffect(() => {
+        console.log({formData})
+        if(formData){
+            setItems(restructureFormData(formData))
+        }
+    },[formData])
+    
     const updateChance = (qid, index, newValue) => {
         setData(prev => {
             const updated = [...prev[qid]];
@@ -110,23 +141,20 @@ export default function Home() {
 
             return acc;
         }, {});
-        console.log({ formData, data })
-        console.log(pickAll(formData))
-
         const pickedUrl = generatePickedURL(pickAll(formData));
         console.log({ pickedUrl })
 
     };
 
-    if (SessionStatus === "loading" || !session) {
+    if (SessionStatus === "loading") {
         return <div>Loading...</div>;
     }
 
 
     return (
         <div>
-            <h1>Welcome, {session.user.name}!</h1>
-            <p>Your email: {session.user.email}</p>
+            <h1>Welcome, {session?.user.name ?? "loading..."}!</h1>
+            <p>Your email: {session?.user.email ?? "loading..."}</p>
             <LogoutButton />
             <hr />
             <form onSubmit={onSubmit} action={"/result"}>
