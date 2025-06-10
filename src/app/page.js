@@ -4,13 +4,21 @@ import { useEffect, useState } from "react";
 import LoginButton from "@/components/GoogleIO/OauthLoginButton";
 import LogoutButton from "@/components/GoogleIO/OauthLogoutButton";
 import '@/app/autofill.css';
-import { redirect } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
 
 
 export default function Home() {
     const { data: session, status } = useSession();
     const [formInput, setFormInput] = useState({name:"form-input", value:""})
     const [formInputIsValid, setFormInputIsValid] = useState(2)
+    const searchParams = useSearchParams()
+
+    const formurlfail = searchParams.get('formurlfail') == 1
+    useEffect(()=>{
+        if(formurlfail){
+            setFormInputIsValid(0)
+        }
+    },[formurlfail])
     // Handle case when there is a session
 
     function handleFormInputChange(value){

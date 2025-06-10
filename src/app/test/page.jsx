@@ -1,33 +1,47 @@
 "use client"
+import { useSession } from "next-auth/react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
-const formData = [
-    {name:"a", title:"a"},
-    {name:"b", title:"b"},
-    {name:"c", title:"c"},
-    {name:"c", title:"2nd c"},
-    {name:"c", title:"3rd c"},
-]
+import { getToken } from "next-auth/jwt";
+
 export default function Home() {
-    
-    function addMore(e){
-        //make this add more input with the same name(field)
-        e.target.parentNode.append(<p>ass</p>)
-        console.log()
+    const [url, seturl] = useState("")
+    const { data: session, SessionStatus } = useSession()
+    function handleClick() {
+        console.log("click!")
+        if (url.includes('docs.google.com') && session) {
+            console.log(url)
+            const formId = url.split('/').at(-2)
+            console.log(formId)
+            getstructure(formId, session)
+        }
+    }
+    function handleChange(value) {
+        seturl(value)
+    }
+    useEffect(() => {
+    }, [url])
+
+    if (!session) {
+        return <b>stop</b>
     }
 
-    return(
+    return (
         <div>
             <h1>Hello</h1>
-            <form action="">
-                {formData.map((i,index)=>
-                    <div key={i.name+index}>
-                        <label htmlFor="">{i.title}</label>
-                        <input type="text" name={i.name}/>
-                        <button type="button" onClick={(e)=>addMore(e)} >Add more</button>
-                    </div>
-                )}
-            </form>
+            <input type="text" style={{ width: '70%' }} onChange={(e) => handleChange(e.target.value)} value={url} />
+            <button onClick={handleClick}>CLICK</button>
         </div>
     )
 
 }
+
+async function getstructure(formId, session) {
+    const linkTemplate = `https://forms.googleapis.com/v1/forms/${formId}?accessToken=${session.accessToken}`
+
+    // const res = await fetch(linkTemplate);
+    // const data = await res.json();
+    // console.log(data)
+
+}
+    

@@ -18,8 +18,7 @@ export default function Home() {
     const searchParams = useSearchParams()
     const formurl = searchParams.get('formurl')
     useEffect(() => {
-        if (session && session?.accessToken && !formData) {
-            console.log(session)
+        if (session && session?.accessToken && typeof formData == "undefined") {
             const fetchGoogleForm = async () => {
                 try {
                     const res = await fetch(`/api/google-form?accessToken=${session.accessToken}&formurl=${formurl}`);
@@ -36,9 +35,11 @@ export default function Home() {
         }
     }, [session]);
     useEffect(() => {
-        console.log({formData})
+        console.log(formData)
         if(formData){
             setItems(restructureFormData(formData))
+        }else{
+            redirect('/?formurlfail=1')
         }
     },[formData])
     
@@ -442,7 +443,7 @@ function pickAll(data) {
     return result;
 }
 
-const generatePickedURL = (data) => {
+const generatePickedURL = (data, url) => {
     const params = new URLSearchParams();
 
     Object.entries(data).forEach(([qid, entries]) => {
@@ -458,6 +459,6 @@ const generatePickedURL = (data) => {
         });
     });
 
-    return `/result?${params.toString()}`;
+    return `${url}?${params.toString()}`;
 };
 

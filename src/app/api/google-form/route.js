@@ -20,7 +20,7 @@ export async function GET(req) {
     // Initialize the Google Forms API client
     const forms = google.forms({ version: 'v1', auth: oauth2Client });
     // const formId = googleFormId;  // Replace with your form ID
-    const formId = "16Qc7HE83jrph5NvQEqGcQjQyy58MgVj3eyeuWMziOwg";  // Replace with your form ID
+    const formId = googleFormId;  // Replace with your form ID
     const response = await forms.forms.get({ formId });
 
     // Send form data as the response
