@@ -11,70 +11,6 @@ export default function Home() {
     const { data: session, SessionStatus } = useSession()
     const [data, setData] = useState({});
 
-    // old
-    // const updateChance = (qid, index, newValue) => {
-    //     setData(prev => {
-    //         const newChances = [...prev[`${qid}_chances`]];
-    //         newChances[index] = parseFloat(newValue);
-    //         return { ...prev, [`${qid}_chances`]: newChances };
-    //     });
-    // };
-
-    // old
-    // const updateOption = (qid, index, newValue) => {
-    //     setData(prev => {
-    //         const newOptions = [...prev[`${qid}_options`]];
-    //         newOptions[index] = newValue;
-    //         return { ...prev, [`${qid}_options`]: newOptions };
-    //     });
-    // };
-
-    // old
-    // const addOption = (qid) => {
-    //     setData(prev => {
-    //         const newOptions = [...prev[`${qid}_options`], 'New Option'];
-    //         const newChances = [...prev[`${qid}_chances`], 0];
-    //         return {
-    //             ...prev,
-    //             [`${qid}_options`]: newOptions,
-    //             [`${qid}_chances`]: newChances
-    //         };
-    //     });
-    // };
-
-    // // old logic
-    // useEffect(() => {
-    //     if (!items || items.length === 0) return;
-
-    //     const result = {};
-    //     items.forEach((item) => {
-    //         const qid = item.questionId;
-    //         const options = item.options?.filter((i) => i.value).map(opt => opt.value);
-    //         const chances = new Array(options?.length).fill(0);
-    //         if (item.type === 'RADIO' || item.type === 'CHECKBOX' || item.type === 'DROP_DOWN') {
-    //             result[`${qid}_options`] = options;
-    //             result[`${qid}_chances`] = chances;
-    //         } else if (item.type === 'LINEAR_SCALE' || item.type === 'RATING') {
-    //             result[`${qid}_options`] = item.options;
-    //             result[`${qid}_chances`] = new Array(item.options.length).fill(0);
-    //         } else if (item.type === 'MULTIPLE_CHOICE_GRID' || item.type === 'CHECKBOX_GRID') {
-    //             const options = item.options;
-    //             const chances = new Array(options?.length).fill(0);
-    //             item.questions.forEach((r) => {
-    //                 const qid = r.questionId
-    //                 result[`${qid}_options`] = options; // For short answer, paragraph, etc.
-    //                 result[`${qid}_chances`] = chances;
-    //             })
-    //         } else {
-    //             result[`${qid}_options`] = ['']; // For short answer, paragraph, etc.
-    //             result[`${qid}_chances`] = [0];
-
-    //         }
-    //     });
-
-    //     setData(result);
-    // }, [items]);
-
     const updateChance = (qid, index, newValue) => {
         setData(prev => {
             const updated = [...prev[qid]];
@@ -82,43 +18,6 @@ export default function Home() {
             return { ...prev, [qid]: updated };
         });
     };
-
-    // const updateChance = (qid, index, newValue) => {
-    //     setData(prev => {
-    //     const group = [...prev[qid]];
-    //     const parsedValue = parseFloat(newValue, 2);
-
-    //     // Check if options are dependent
-    //     const isDependent = group.every(opt => !opt.independentChance);
-
-    //     if (!isDependent) {
-    //         // Fallback to normal update
-    //         group[index] = { ...group[index], chance: parsedValue };
-    //         return { ...prev, [qid]: group };
-    //     }
-
-    //     // Total we want to maintain (e.g., 1.0)
-    //     const TOTAL = 100;
-
-    //     // Set new value to selected index
-    //     group[index] = { ...group[index], chance: parsedValue };
-
-    //     // Sum of other chances
-    //     const otherIndices = group.map((_, i) => i).filter(i => i !== index);
-    //     const remaining = TOTAL - parsedValue;
-    //     const oldSum = otherIndices.reduce((sum, i) => sum + group[i].chance, 0);
-
-    //     // Redistribute proportionally
-    //     otherIndices.forEach(i => {
-    //         const old = group[i].chance;
-    //         const newChance = oldSum > 0 ? (old / oldSum) * remaining : remaining / otherIndices.length;
-    //         group[i] = { ...group[i], chance: parseFloat(newChance.toFixed(6)) };
-    //     });
-
-    //     return { ...prev, [qid]: group };
-    //     });
-    // };
-
 
     const updateOption = (qid, index, newValue) => {
         setData(prev => {
@@ -189,7 +88,6 @@ export default function Home() {
                     }
                 });
             } else {
-                // Short answer, paragraph, etc.
                 result[`${baseQid}`] = [{
                     option: '',
                     chance: 0
@@ -200,8 +98,6 @@ export default function Home() {
         setData(result);
     }, [items]);
 
-
-    // submit handler
     const onSubmit = async (e) => {
         e.preventDefault()
         const formData = Object.entries(data).reduce((acc, [qid, entries]) => {
@@ -219,26 +115,6 @@ export default function Home() {
 
         const pickedUrl = generatePickedURL(pickAll(formData));
         console.log({ pickedUrl })
-        // window.location.href = pickedUrl;
-
-        // try {
-        //     const response = await fetch('/api/submit-form', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json'
-        //         },
-        //         body: JSON.stringify(formData)
-        //     });
-
-        //     if (response.ok) {
-        //         const result = await response.json();
-        //         console.log('Form submitted successfully:', result);
-        //     } else {
-        //         console.error('Form submission failed:', response.statusText);
-        //     }
-        // } catch (error) {
-        //     console.error('Error submitting form:', error);
-        // }
 
     };
 
@@ -256,11 +132,6 @@ export default function Home() {
             <form onSubmit={onSubmit} action={"/result"}>
                 {items.map((item) => {
                     const qid = item.questionId;
-
-                    //old
-                    // const options = data[`${qid}_options`] || [];
-                    // const chances = data[`${qid}_chances`] || [];
-
                     const values = data[qid] || [];
                     if (item.questionText) {
                         return (
@@ -316,10 +187,6 @@ export default function Home() {
                                 <ul>
                                     {item.questions.map((q, idx) => {
                                         const qid = q.questionId
-                                        // old
-                                        // const chances = data[`${qid}_chances`] || [];
-                                        // const options = data[`${qid}_options`] || [];
-
                                         const values = data[qid] || [];
                                         return (
                                             <li key={qid} >
@@ -435,7 +302,6 @@ export default function Home() {
                                 : null}
                         </div>
                     );
-                    // }
                 })}
                 <button type="submit">SUBMIT</button>
             </form>
@@ -466,7 +332,6 @@ function restructureFormData(originalData) {
                 options = Array.from({ length: Math.ceil((question.ratingQuestion.ratingScaleLevel)) }, (_, i) => 1 + i,)
             }
             if (question.choiceQuestion) {
-                // options = question.choiceQuestion.options.filter((i)=>i.value)
                 options = question.choiceQuestion.options
             }
             return {
@@ -495,7 +360,6 @@ function restructureFormData(originalData) {
             };
         }
 
-        // Check for questionGroupItem (for grid type questions)
         if (item.questionGroupItem) {
             const { questions, grid } = item.questionGroupItem;
             const columnType = grid.columns.type;
@@ -513,7 +377,6 @@ function restructureFormData(originalData) {
             };
         }
 
-        // If no valid questionItem or questionGroupItem, return null or handle appropriately
         return null;
     }).filter(item => item !== null);
 }
@@ -532,7 +395,6 @@ function weightedPick(options) {
         if (rand <= acc) return opt;
     }
 
-    // fallback (shouldn't happen unless total = 0)
     return options[0];
 }
 
