@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.9.0",
+    "feather-icons": "^4.29.2",
     "googleapis": "^149.0.0",
     "next": "15.3.3",
     "next-auth": "^4.24.11",

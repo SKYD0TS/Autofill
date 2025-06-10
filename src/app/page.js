@@ -13,44 +13,56 @@ export default function Home() {
         <div className="container">
             <div className="top-half">
                 <div className="header">
-                    <div className="logo">Autofill</div>
                     <nav className="nav">
                         <a href="#faq">FAQ</a>
                         <div className="dropdown">Pricelist</div>
                         <div className="dropdown">Socials</div>
                     </nav>
-                    {status === "loading"?
-                        <div>Loading...</div>:
-                            session?
-                            <p className="account">{session.user.name} <LogoutButton/></p>:
-                            <LoginButton/>
+                    <div className="logo">
+                        <a href="/">
+                            <img src="/images/mark-white.png"/>
+                            <img src="/images/logo-white.png"/>
+                        </a>
+                    </div>
+                    {status === "loading" ?
+                        <div className="account"><p>Loading...</p></div>
+                        :
+                        session ?
+                            <div className="account">
+                                <p>{session.user.name} <LogoutButton /></p>
+                            </div> :
+                            <div className="account">
+                                <LoginButton />
+                            </div>
                     }
-                    {/* <button className="login-btn">Sign in with</button> */}
                 </div>
 
                 <main className="hero">
                     <h1>Make your life easier with <strong>Autofill</strong></h1>
-                    <p>Finish your questionere in just one click</p>
+                    <p className="tagline">Finish your questionere in just one click</p>
                     <input type="text" placeholder="Ketik link Google Form Anda disini" className="form-input" />
-                    <div className="arrow-down"><a href="#features"><img src="/down-chevron.svg" width={64} height={64} style={{ filter:'invert(1)' }}/></a></div>
+                    <div className="arrow-down"><a href="#features"><i data-feather="circle"></i></a></div>
                 </main>
             </div>
             <div className="bottom-half">
                 <section className="features" id="features">
+                    
+                    
+                    
                     <div className="feature-box">
-                        <span role="img" aria-label="speed"><img src="/lightning.svg" width={32} height={32} /></span>
-                        <h3>Cepat</h3>
-                        <p>Menekankan kecepatan, cocok untuk mahasiswa yang dikejar deadline.</p>
+                        <img src="/images/package-img/Autofill-cepat-icon.svg" />
+                        <h2 className="tagline">Cepat</h2>
+                        <p>Cocok untuk mahasiswa yang dikejar deadline.</p>
                     </div>
                     <div className="feature-box">
-                        <span role="img" aria-label="secure"><img src="/lightning.svg" width={32} height={32} /></span>
-                        <h3>Aman</h3>
-                        <p>Data klien tidak akan disalahgunakan dan disebarluaskan.</p>
+                        <img src="/images/package-img/Autofill-aman-icon.svg" />
+                        <h2 className="tagline">Aman</h2>
+                        <p>Data klien aman dari penyalahgunaan.</p>
                     </div>
                     <div className="feature-box">
-                        <span role="img" aria-label="flexible"><img src="/lightning.svg" width={32} height={32} /></span>
-                        <h3>Fleksibel</h3>
-                        <p>Menawarkan fleksibilitas sesuai kebutuhan responden dan target.</p>
+                        <img src="/images/package-img/Autofill-fleksibel-icon.svg" />
+                        <h2 className="tagline">Fleksibel</h2>
+                        <p>Menyesuaikan kebutuhan responden dan target.</p>
                     </div>
                 </section>
 
@@ -62,50 +74,61 @@ export default function Home() {
                     <div className="packages">
                         <div className="package">
                             <div className="top">
-                                <h3>50-99 responden</h3>
                                 <p>Diskon 10% dengan kode referral</p>
+                                <h1>50-99<br/><span className="thin">RESPONDEN</span></h1>
+                                <div>
+                                    <h2><small className="thin currency">Rp</small> 500<small className="thinner">/responden</small></h2>
+                                    <small>*Lebih hemat 20%</small>
+                                </div>
                             </div>
                             <div className="bottom">
-                                <h3><span>Rp</span> 500 <span>/responden</span></h3>
+                                <button>PILIH PAKET</button>
+                            </div>
+                        </div>
+                        <div className="package active has-bestseller-badge">
+                            <div className="bestseller-badge"><b>BEST SELLER</b></div>
+                            <div className="top">
+                                <p>Diskon 10% dengan kode referral</p>
+                                <h1>100-299<br/><span className="thin">RESPONDEN</span></h1>
+                                <div>
+                                    <h2><small className="thin currency">Rp</small> 400<small className="thinner">/responden</small></h2>
+                                    <small>*Lebih hemat 20%</small>
+                                </div>
+                            </div>
+                            <div className="bottom">
                                 <button>PILIH PAKET</button>
                             </div>
                         </div>
                         <div className="package">
                             <div className="top">
-                                <h3>100-299 responden</h3>
-                                <p>Diskon 10% dengan kode referral</p>
-                            </div>
-                            <div className="bottom">
-                                <h3><span>Rp</span> 400 <span>/responden</span></h3>
-                                <small>*Lebih hemat 20%</small>
-                                <button>PILIH PAKET</button>
-                            </div>
-                        </div>
-                        <div className="package">
-                            <div className="top">
-                                <h3>300-700 responden</h3>
                                 <p>Diskon 15% dengan kode referral</p>
+                                <h1>300-700<br/><span className="thin">RESPONDEN</span></h1>
+                                <div>
+                                    <h2><small className="thin currency">Rp</small> 350<small className="thinner">/responden</small></h2>
+                                    <small>*Lebih hemat 30%</small>
+                                </div>
                             </div>
                             <div className="bottom">
-                                <h3><span>Rp</span> 350 <span>/responden</span></h3>
-                                <small>*Lebih hemat 30%</small>
                                 <button>PILIH PAKET</button>
                             </div>
                         </div>
                     </div>
                 </section>
                 <footer className="footer">
-                    <div className="footer-logo">✨</div>
+                    <div className="footer-logo"><img src="/images/mark-black.png" /></div>
                     <div className="footer-links">
                         <a href="#pricelist">Pricelist</a>
                         <a href="#home">Home</a>
                         <a href="#faq">FAQ</a>
                     </div>
-                    <div className="socials">[Social Icons Here]</div>
+                    <div className="socials">
+                        <a href="#"><img src="/images/social-icons/autofill-instagram-icon.svg" height={32}/></a>
+                        <a href="#"><img src="/images/social-icons/autofill-whatsapp-icon.svg " height={32}/></a>
+                        <a href="#"><img src="/images/social-icons/autofill-x-icon.svg" height={32}/></a>
+                    </div>
                     <p>© 2025 AUTOFILL ALL RIGHTS RESERVED</p>
                 </footer>
             </div>
-
         </div>
     );
 }
