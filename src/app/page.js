@@ -5,21 +5,20 @@ import LoginButton from "@/components/GoogleIO/OauthLoginButton";
 import LogoutButton from "@/components/GoogleIO/OauthLogoutButton";
 import '@/app/autofill.css';
 import { redirect, useSearchParams } from "next/navigation";
-
+const FORM_PARSE_PAGE = "testform"
 
 export default function Home() {
     const { data: session, status } = useSession();
     const [formInput, setFormInput] = useState({name:"form-input", value:""})
-    const [formInputIsValid, setFormInputIsValid] = useState(2)
+    const [formInputIsValid, setFormInputIsValid] = useState(-1) // -1 null, 0 invalid, 1 valid, 2 responder link, 3 401, 4 no session
     const searchParams = useSearchParams()
 
-    const formurlfail = searchParams.get('formurlfail') == 1
+    const failedFormUrl = searchParams.get('formurlfail')
     useEffect(()=>{
-        if(formurlfail){
-            setFormInputIsValid(0)
+        if(failedFormUrl){
+            setFormInputIsValid(failedFormUrl)
         }
-    },[formurlfail])
-    // Handle case when there is a session
+    },[failedFormUrl])
 
     function handleFormInputChange(value){
         setFormInput(prev=>{
@@ -28,13 +27,22 @@ export default function Home() {
     }
     useEffect(()=>{
         if(formInput.value.includes("docs.google.com")){
-            console.log(formInput)
             setFormInputIsValid(1)
-            redirect(`/testform?formurl="${formInput.value}"`)
+            if(!formInput.value.includes("edit")){
+                setFormInputIsValid(2)
+                return
+            }else{
+                if(!session){
+                    setFormInputIsValid(4)
+                    return 
+                }
+                redirect(`/${FORM_PARSE_PAGE}?formurl="${formInput.value}"`)
+            }
         }else if(formInput.value){
             setFormInputIsValid(0)
         }
     },[formInput])
+
     return (
         <div className="container">
             <div className="top-half">
@@ -68,8 +76,13 @@ export default function Home() {
                     <h1>Make your life easier with <strong>Autofill</strong></h1>
                     <p className="tagline">Finish your questionere in just one click</p>
                     <input type="text" name={formInput.name} value={formInput.value} onChange={(e)=>handleFormInputChange(e.target.value, formInput.name)} placeholder="Ketik link Google Form Anda disini" className="form-input" />
-                    <p>{formInputIsValid==1?
-                            "link valid":formInputIsValid==0?"invalid link":null}</p>
+                    <p>{formInputIsValid==0?
+                            "invalid link":formInputIsValid==1?
+                            "link valid":formInputIsValid==2?
+                            "currently only accept editor link":formInputIsValid==3?
+                            "unauthorized":formInputIsValid==4?
+                            "please log-in":null}
+                            </p>
                     <div className="arrow-down"><a href="#features"><i data-feather="circle"></i></a></div>
                 </main>
             </div>

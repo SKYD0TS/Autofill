@@ -12,7 +12,11 @@ export default function Home() {
     const { data: session, SessionStatus } = useSession()
     const [data, setData] = useState({});
     const [formData, setFormData] = useState();
+    const [responderUri, setResponderUri] = useState("");
+    const [respondCount, setRespondCount] = useState(1);
+    const [invalidForm, setInvalidForm] = useState(false);
     const [items, setItems] = useState([]);
+    const [redirectStatus, setRedirectStatus] = useState();
     // const router = useRouter();
     // const formurl = router.query.formurl; 
     const searchParams = useSearchParams()
@@ -22,27 +26,54 @@ export default function Home() {
             const fetchGoogleForm = async () => {
                 try {
                     const res = await fetch(`/api/google-form?accessToken=${session.accessToken}&formurl=${formurl}`);
-                    console.log('FETCH:::', `/api/google-form?accessToken=${session.accessToken}&formurl=${formurl}`)
                     const data = await res.json();
+                    setRedirectStatus(data.status)
                     setFormData(data);
-                    // console.log(data)
+                    setResponderUri(data.responderUri);
                 } catch (error) {
                     console.error('Error fetching form data:' + error);
                 }
             };
-
             fetchGoogleForm();
         }
     }, [session]);
     useEffect(() => {
-        console.log(formData)
-        if(formData){
+        if (!formData) {
+            return
+        }
+        if (!formData.error) {
             setItems(restructureFormData(formData))
-        }else{
+        } else if (redirectStatus == 401) {
+            redirect('/?formurlfail=3')
+        } else if (formData.error) {
             redirect('/?formurlfail=1')
         }
-    },[formData])
-    
+    }, [formData])
+
+    useEffect(() => {
+        // Iterate over the options and set invalid form flag
+        let isInvalid = false;
+
+        items.forEach((item) => {
+            const qid = item.questionId;
+            const values = data[qid] || [];
+
+            values.forEach((opt) => {
+                const totalChance = parseFloat(values.reduce((acc, o) => acc + o.chance, 0));
+                if (item.required && totalChance < 1) {
+                    isInvalid = true;
+                }
+
+                if (opt.option === "" && opt.chance > 0) {
+                    isInvalid = true;
+                }
+            });
+        });
+
+        setInvalidForm(isInvalid);
+    }, [data, items]); // Run this effect when data or items change
+
+
     const updateChance = (qid, index, newValue) => {
         setData(prev => {
             const updated = [...prev[qid]];
@@ -87,20 +118,20 @@ export default function Home() {
                 if (item.type == "CHECKBOX") {
                     result[`${baseQid}`] = options.map(opt => ({
                         option: opt,
-                        chance: 0,
+                        chance: 50,
                         independentChance: true
                     }));
                 } else {
                     result[`${baseQid}`] = options.map(opt => ({
                         option: opt,
-                        chance: 0
+                        chance: 50
                     }));
                 }
             } else if (item.type === 'LINEAR_SCALE' || item.type === 'RATING') {
                 const options = item.options || [];
                 result[`${baseQid}`] = options.map(opt => ({
                     option: opt,
-                    chance: 0
+                    chance: 50
                 }));
             } else if (item.type === 'MULTIPLE_CHOICE_GRID' || item.type === 'CHECKBOX_GRID') {
                 const options = item.options || [];
@@ -109,68 +140,108 @@ export default function Home() {
                     if (item.type == 'CHECKBOX_GRID') {
                         result[`${qid}`] = options.map(opt => ({
                             option: opt,
-                            chance: 0,
+                            chance: 50,
                             independentChance: true
                         }));
                     } else {
                         result[`${qid}`] = options.map(opt => ({
                             option: opt,
-                            chance: 0,
+                            chance: 50,
                         }));
                     }
                 });
             } else {
                 result[`${baseQid}`] = [{
                     option: '',
-                    chance: 0
+                    chance: 100
                 }];
             }
         });
-
         setData(result);
     }, [items]);
 
     const onSubmit = async (e) => {
         e.preventDefault()
-        const formData = Object.entries(data).reduce((acc, [qid, entries]) => {
+        const formInputData = Object.entries(data).reduce((acc, [qid, entries]) => {
+            let found = items.find((e) => {
+                if (e.type.includes("GRID")) {
+                    return e.questions.some((q) => q.questionId == qid)
+                } else {
+                    return e.questionId == qid
+                }
+
+            })
+            found = found.type.includes('GRID') ? found.questions.find((q) => q.questionId == qid) : found
             acc[qid] = entries.map(entry => ({
                 option: entry.option,
                 chance: entry.chance,
                 isOther: entry.isOther || false,
-                independentChance: entry.independentChance || false
+                independentChance: entry.independentChance || false,
+                isRequired: found.required ?? false
             }));
-
             return acc;
         }, {});
-        const pickedUrl = generatePickedURL(pickAll(formData));
-        console.log({ pickedUrl })
+        let urls = []
+        // console.log(invalidForm)
+        // const pickedUrl = generatePickedURL(pickAll(formInputData), responderUri);
+        // console.log(pickedUrl)
+
+
+        if (!invalidForm) {
+            for (let r = 0; r < respondCount; r++) {
+                const pickedUrl = generatePickedURL(pickAll(formInputData), responderUri);
+                console.log(pickedUrl)
+                urls.push(pickedUrl)
+            }
+        }
+
+
+        console.log(invalidForm)
+        // try {
+        //     const res = await fetch('/api/send-responds', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify({urls:urls}), // Send data as JSON
+        //     });
+
+        //     const data = await res.json();
+        //     // setMessage(data.message); // Update state with the response
+        // } catch (error) {
+        //     console.error('Error:', error);
+        //     // setMessage('Error calling the API');
+        // }
 
     };
 
-    if (SessionStatus === "loading") {
-        return <div>Loading...</div>;
+    if (!items) {
+        return
     }
-
 
     return (
         <div>
-            <h1>Welcome, {session?.user.name ?? "loading..."}!</h1>
-            <p>Your email: {session?.user.email ?? "loading..."}</p>
+            <h1>Welcome, {session?.user.name}!</h1>
+            <p>Your email: {session?.user.email}</p>
             <LogoutButton />
-            <hr />
+            <input type="number" value={respondCount} onChange={(e) => { setRespondCount(e.target.value) }} />
             <form onSubmit={onSubmit} action={"/result"}>
                 {items.map((item) => {
                     const qid = item.questionId;
                     const values = data[qid] || [];
+                    const totalChance = parseFloat(values.reduce((acc, o) => acc + o.chance, 0))
+
+                    //text questions
                     if (item.questionText) {
                         return (
                             <div key={item.itemId}>
                                 <hr />
+                                <p className="question-required">{item.required ? "required" : null}</p>
                                 <h4>{item.title} {item.questionId}</h4>
                                 <ul>
                                     {/* {options.map((opt, idx) => */}
                                     {values.map((opt, idx) =>
-                                        <li key={`${qid}_${idx}`}>
+                                        <li style={{ display: 'flex', gap: '1rem' }} key={`${qid}_${idx}`}>
                                             {item.type == "SHORT_ANSWER" ?
                                                 <input
                                                     placeholder="sa"
@@ -189,6 +260,7 @@ export default function Home() {
                                                 type="range"
                                                 min="0"
                                                 max="100"
+                                                step={1}
                                                 placeholder="Chance"
                                                 onChange={(e) => updateChance(qid, idx, e.target.value)}
                                                 tabIndex={-1}
@@ -201,6 +273,16 @@ export default function Home() {
                                                 placeholder="Chance"
                                                 onChange={(e) => updateChance(qid, idx, e.target.value)}
                                             />
+                                            <p>{totalChance < 1 ? "0.00" : parseFloat(opt.chance / totalChance * 100).toFixed(2).toString()}</p>
+                                            {/* {item.required && totalChance < 1 ?
+                                                <p>no possible option on required question</p> :
+                                                opt.option == "" && opt.chance > 0 ?<p>empty option on required question</p> :
+                                                    null} */}
+                                            {totalChance < 1 && item.required ? (
+                                                <p>no possible option on required question</p>
+                                            ) : opt.option === "" && opt.chance > 0 ? (
+                                                <p>empty option on required question</p>
+                                            ) : null}
                                         </li>
                                     )}
                                 </ul>
@@ -208,6 +290,8 @@ export default function Home() {
                             </div>
                         )
                     }
+
+                    // grid questions
                     else if (item.type.includes("GRID")) {
                         return (
                             <div key={item.itemId}>
@@ -217,11 +301,12 @@ export default function Home() {
                                     {item.questions.map((q, idx) => {
                                         const qid = q.questionId
                                         const values = data[qid] || [];
+                                        const totalChance = parseFloat(values.reduce((acc, o) => acc + o.chance, 0))
                                         return (
                                             <li key={qid} >
+                                                <p className="question-required">{q.required ? "required" : null}</p>
                                                 <label htmlFor="">{q.title} {q.questionId}</label>
                                                 <ul>
-                                                    {/* {options.map((opt, idx) => */}
                                                     {values.map((opt, idx) =>
                                                         <li key={`${qid}_${idx}`} style={{ display: 'flex', gap: '1rem' }}>
                                                             <input
@@ -261,6 +346,13 @@ export default function Home() {
                                                                 placeholder="Chance"
                                                                 onChange={(e) => updateChance(qid, idx, e.target.value)}
                                                             />
+                                                            {item.type.includes("CHECKBOX") ?
+                                                                null :
+                                                                <p>{totalChance < 1 ? "0.00" : parseFloat(opt.chance / totalChance * 100).toFixed(2).toString()}</p>}
+
+                                                            {q.required && totalChance < 1 ?
+                                                                <p>no possible option on required question</p> :
+                                                                null}
                                                         </li>
                                                     )}
                                                 </ul>
@@ -277,6 +369,7 @@ export default function Home() {
                     return (
                         <div key={item.itemId}>
                             <hr />
+                            <p className="question-required">{item.required ? "required" : null}</p>
                             <h4>{item.title} {item.questionId}</h4>
                             {/* <h4>{item.title}</h4> */}
                             <ul>
@@ -322,6 +415,12 @@ export default function Home() {
                                                 onChange={(e) => updateChance(qid, idx, e.target.value)}
                                                 style={{ width: '80px' }}
                                             />
+                                            {item.type.includes("CHECKBOX") ?
+                                                null
+                                                : <p>{totalChance < 1 ? "0.00" : parseFloat(opt.chance / totalChance * 100).toFixed(2).toString()}</p>}
+                                            {item.required && totalChance < 1 ?
+                                                <p>no possible option on required question</p> :
+                                                null}
                                         </li>
                                     )
                                 })}
@@ -367,6 +466,7 @@ function restructureFormData(originalData) {
                 itemId,
                 title,
                 type: questionType,
+                required: question.required ?? false,
                 questionId: parseInt(question.questionId, 16),
                 ...(question.textQuestion && {
                     questionText: question.textQuestion
@@ -401,7 +501,8 @@ function restructureFormData(originalData) {
                 options,
                 questions: questions.map(q => ({
                     questionId: parseInt(q.questionId, 16),
-                    title: q.rowQuestion.title
+                    title: q.rowQuestion.title,
+                    required: q.required
                 })),
             };
         }
@@ -410,11 +511,13 @@ function restructureFormData(originalData) {
     }).filter(item => item !== null);
 }
 
-function independentPick(options) {
-    return options.filter(opt => Math.random() < opt.chance);
+function independentPick(options, isRequired = false) {
+    const result = options.filter(opt => Math.random() * 100 < opt.chance);
+    return result
 }
 
-function weightedPick(options) {
+function weightedPick(options, isRequired = false) {
+    const totalChance = options.reduce((acc, o) => acc + o.chance, 0.0)
     const total = options.reduce((sum, o) => sum + o.chance, 0);
     const rand = Math.random() * total;
     let acc = 0;
@@ -431,12 +534,20 @@ function pickAll(data) {
     const result = {};
 
     for (const [qid, options] of Object.entries(data)) {
+        // per entry
         const isIndependent = options.some(opt => opt.independentChance === true);
+        const isRequired = options.some(opt => opt.isRequired === true);
 
         if (isIndependent) {
-            result[qid] = independentPick(options);
+            console.log(qid)
+            let picked = independentPick(options);
+            if (isRequired && picked.length < 1) {
+                picked = options[Math.floor(Math.random() * options.length)];
+            }
+            result[qid] = picked
         } else {
-            result[qid] = [weightedPick(options)];
+            const picked = [weightedPick(options)]
+            result[qid] = picked;
         }
     }
 
@@ -445,20 +556,39 @@ function pickAll(data) {
 
 const generatePickedURL = (data, url) => {
     const params = new URLSearchParams();
+    const responderUrl = url.replace(/viewform/, "formResponse")
 
     Object.entries(data).forEach(([qid, entries]) => {
+        let otherOptionHasBeenPicked
+        const otherOptions = data[qid].options.filter(obj => obj.isOther)
+        let randomPick
+        if (otherOptions.length > 1 && otherOptionHasBeenPicked == null) {
+            randomPick = otherOptions[Math.floor(Math.random() * otherOptions.length)];
+        } else if (otherOptions.length == 1) {
+            randomPick = otherOptions[0];
+        }
         entries.forEach(entry => {
             if (entry.chance > 0) {
-                if (entry.isOther) {
+                if (entry.isOther && entry == randomPick) {
                     params.append(`entry.${qid}.other_option_response`, entry.option);
                     params.append(`entry.${qid}`, "__other_option__");
-                } else {
+                } else if (!entry.isOther) {
                     params.append(`entry.${qid}`, entry.option);
                 }
+            } else {
+                console.warn(`${qid} is empty`)
             }
         });
+        otherOptionHasBeenPicked = null
     });
 
-    return `${url}?${params.toString()}`;
+    return `${responderUrl}?${params.toString()}`;
 };
 
+// `undefined
+// ?entry.894418696=Option+1
+// &entry.894418696=Option+2
+// &entry.894418696=Option+3
+// &entry.894418696.other_option_response=op4
+// &entry.894418696=__other_option__
+// &entry.894418696=op5`

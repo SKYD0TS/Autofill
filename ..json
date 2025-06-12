@@ -1,155 +1,163 @@
-{
-    "101083632": [
-        {
-            "answer": "Column 2",
-            "chance": 30,
-            "independentChance": false
+[
+    {
+        "itemId": "100812a8",
+        "title": "-Short answer",
+        "type": "SHORT_ANSWER",
+        "required": true,
+        "questionId": 1021243155,
+        "questionText": {}
+    },
+    {
+        "itemId": "405a3d7a",
+        "title": "-Paragraph",
+        "type": "PARAGRAPH",
+        "required": true,
+        "questionId": 1184876989,
+        "questionText": {
+            "paragraph": true
         }
-    ],
-    "218381560": [
-        {
-            "answer": "Column 1",
-            "chance": 13,
-            "independentChance": true
-        },
-        {
-            "answer": "Column 2",
-            "chance": 81,
-            "independentChance": true
+    },
+    {
+        "itemId": "2d817e03",
+        "title": "-Multiple Choice",
+        "type": "RADIO",
+        "required": true,
+        "questionId": 1166587114,
+        "options": [
+            {
+                "value": "Option 1"
+            },
+            {
+                "value": "Option 2"
+            },
+            {
+                "value": "Option 3"
+            },
+            {
+                "isOther": true
+            }
+        ]
+    },
+    {
+        "itemId": "677876d4",
+        "title": "-Checkbox",
+        "type": "CHECKBOX",
+        "required": true,
+        "questionId": 894418696,
+        "options": [
+            {
+                "value": "Option 1"
+            },
+            {
+                "value": "Option 2"
+            },
+            {
+                "value": "Option 3"
+            },
+            {
+                "isOther": true
+            }
+        ]
+    },
+    {
+        "itemId": "28624453",
+        "title": "-Dropdown",
+        "type": "DROP_DOWN",
+        "required": true,
+        "questionId": 784013799,
+        "options": [
+            {
+                "value": "Option 1"
+            },
+            {
+                "value": "Option 2"
+            },
+            {
+                "value": "Option 3"
+            }
+        ]
+    },
+    {
+        "itemId": "065f9a4b",
+        "title": "-Linear scale",
+        "type": "LINEAR_SCALE",
+        "required": true,
+        "questionId": 1530946951,
+        "options": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ],
+        "scale": {
+            "lowLabel": "bad",
+            "highLabel": "good"
         }
-    ],
-    "279661583": [
-        {
-            "answer": "Column 3",
-            "chance": 72,
-            "independentChance": false
+    },
+    {
+        "itemId": "36e54d49",
+        "title": "-Ratings",
+        "type": "RATING",
+        "required": true,
+        "questionId": 1040146335,
+        "options": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ],
+        "rating": {
+            "iconType": "STAR"
         }
-    ],
-    "452900931": [
-        {
-            "answer": "Column 1",
-            "chance": 19,
-            "independentChance": true
-        },
-        {
-            "answer": "Column 2",
-            "chance": 53,
-            "independentChance": true
-        },
-        {
-            "answer": "Column 3",
-            "chance": 51,
-            "independentChance": true
-        }
-    ],
-    "784013799": [
-        {
-            "answer": "Option 2",
-            "chance": 86,
-            "independentChance": false
-        }
-    ],
-    "894418696": [
-        {
-            "answer": "Option 1",
-            "chance": 100,
-            "independentChance": true
-        },
-        {
-            "answer": "Option 2",
-            "chance": 100,
-            "independentChance": true
-        },
-        {
-            "answer": "Option 3",
-            "chance": 100,
-            "independentChance": true
-        }
-    ],
-    "946924013": [
-        {
-            "answer": "Column 1",
-            "chance": 40,
-            "independentChance": true
-        },
-        {
-            "answer": "Column 2",
-            "chance": 70,
-            "independentChance": true
-        },
-        {
-            "answer": "Column 3",
-            "chance": 23,
-            "independentChance": true
-        }
-    ],
-    "1021243155": [
-        {
-            "answer": "",
-            "chance": 0,
-            "independentChance": false
-        }
-    ],
-    "1040146335": [
-        {
-            "answer": 5,
-            "chance": 80,
-            "independentChance": false
-        }
-    ],
-    "1166587114": [
-        {
-            "answer": "Option 1",
-            "chance": 100,
-            "independentChance": false
-        }
-    ],
-    "1184876989": [
-        {
-            "answer": "",
-            "chance": 0,
-            "independentChance": false
-        }
-    ],
-    "1530946951": [
-        {
-            "answer": 5,
-            "chance": 84,
-            "independentChance": false
-        }
-    ],
-    "2028032672": [
-        {
-            "answer": "Column 2",
-            "chance": 52,
-            "independentChance": false
-        }
-    ]
-}
-
-
-"/result?entry.101083632=Column+1
-&entry.218381560=Column+1
-&entry.218381560=Column+2
-&entry.218381560=Column+3
-&entry.279661583=Column+1
-&entry.452900931=Column+1
-&entry.452900931=Column+2
-&entry.452900931=Column+3
-&entry.784013799=Option+1
-&entry.894418696=Option+1
-&entry.894418696=Option+2
-&entry.894418696=Option+3
-&entry.946924013=Column+1
-&entry.946924013=Column+2
-&entry.946924013=Column+3
-&entry.1021243155=The
-&entry.1040146335=5
-&entry.1166587114.other_option_response=Op5
-&entry.1166587114=__other_option__
-&entry.1184876989=Par2
-&entry.1530946951=5
-&entry.2028032672=Column+2"
-
-https://docs.google.com/forms/d/e/1FAIpQLSdi8v0DHEWvSg-HkPbOopq5ej79pba_njR1pYhfbjNCbOld0Q/formResponse?entry.101083632=Column+1&entry.218381560=Column+1&entry.218381560=Column+2&entry.218381560=Column+3&entry.279661583=Column+1&entry.452900931=Column+1&entry.452900931=Column+2&entry.452900931=Column+3&entry.784013799=Option+1&entry.894418696=Option+1&entry.894418696=Option+2&entry.894418696=Option+3&entry.946924013=Column+1&entry.946924013=Column+2&entry.946924013=Column+3&entry.1021243155=The&entry.1040146335=5&entry.1166587114.other_option_response=Op5&entry.1166587114=__other_option__&entry.1184876989=Par2&entry.1530946951=5&entry.2028032672=Column+2
-https://docs.google.com/forms/d/e/1FAIpQLSdi8v0DHEWvSg-HkPbOopq5ej79pba_njR1pYhfbjNCbOld0Q/formResponse?entry.101083632=Column+1&entry.218381560=Column+1&entry.218381560=Column+2&entry.218381560=Column+3&entry.279661583=Column+1&entry.452900931=Column+1&entry.452900931=Column+2&entry.452900931=Column+3&entry.784013799=Option+2&entry.894418696=Option+1&entry.894418696=Option+2&entry.894418696=Option+3&entry.894418696.other_option_response=CB&entry.894418696=__other_option__&entry.946924013=Column+1&entry.946924013=Column+2&entry.946924013=Column+3&entry.1021243155=what&entry.1040146335=5&entry.1166587114=Option+2&entry.1184876989=Par2&entry.1530946951=5&entry.2028032672=Column+1"
+    },
+    {
+        "itemId": "3b1cd726",
+        "title": "-Multiple-choice grid",
+        "type": "MULTIPLE_CHOICE_GRID",
+        "options": [
+            "Column 1",
+            "Column 2",
+            "Column 3"
+        ],
+        "questions": [
+            {
+                "questionId": 279661583,
+                "title": "Row 1"
+            },
+            {
+                "questionId": 101083632,
+                "title": "Row 2"
+            },
+            {
+                "questionId": 2028032672,
+                "title": "Row 3"
+            }
+        ]
+    },
+    {
+        "itemId": "69a40a49",
+        "title": "-Tick box grid",
+        "type": "CHECKBOX_GRID",
+        "options": [
+            "Column 1",
+            "Column 2",
+            "Column 3"
+        ],
+        "questions": [
+            {
+                "questionId": 452900931,
+                "title": "Row 1"
+            },
+            {
+                "questionId": 946924013,
+                "title": "Row 2"
+            },
+            {
+                "questionId": 218381560,
+                "title": "Row 3"
+            }
+        ]
+    }
+]
