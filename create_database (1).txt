@@ -1,0 +1,96 @@
+-- Membuat database
+CREATE DATABASE web_admin;
+USE web_admin;
+
+-- Tabel users (admin dan customer)
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL, -- Disimpan dalam hash (misalnya, MD5 atau bcrypt)
+    role ENUM('admin', 'customer') NOT NULL,
+    email VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabel web_traffic (menyimpan data traffic web)
+CREATE TABLE web_traffic (
+    traffic_id INT AUTO_INCREMENT PRIMARY KEY,
+    visit_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ip_address VARCHAR(45),
+    page_visited VARCHAR(255),
+    user_id INT, -- Nullable, jika user login
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+-- Tabel form_submissions (log submit form)
+CREATE TABLE form_submissions (
+    submission_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    form_data TEXT,
+    submission_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+-- Tabel tokens (menyimpan informasi token per user)
+CREATE TABLE tokens (
+    token_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    token_count INT NOT NULL DEFAULT 0,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+-- Tabel vouchers (menyimpan kode voucher dan kepemilikan admin)
+CREATE TABLE vouchers (
+    voucher_id INT AUTO_INCREMENT PRIMARY KEY,
+    voucher_code VARCHAR(20) NOT NULL UNIQUE,
+    admin_id INT, -- Admin yang memiliki voucher
+    discount_percentage DECIMAL(5,2), -- Misalnya, 10.00 untuk 10%
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES users(user_id)
+);
+
+-- Tabel voucher_usage (riwayat penggunaan voucher oleh customer)
+CREATE TABLE voucher_usage (
+    usage_id INT AUTO_INCREMENT PRIMARY KEY,
+    voucher_id INT,
+    user_id INT, -- Customer yang menggunakan voucher
+    used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (voucher_id) REFERENCES vouchers(voucher_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+-- Tabel token_purchases (riwayat pembelian token)
+CREATE TABLE token_purchases (
+    purchase_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    token_amount INT NOT NULL,
+    purchase_amount DECIMAL(10,2) NOT NULL, -- Total harga pembelian
+    purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+-- Tabel bot_activity (ringkasan aktivitas bot)
+CREATE TABLE bot_activity (
+    activity_id INT AUTO_INCREMENT PRIMARY KEY,
+    form_id INT, -- ID form yang diisi bot
+    status ENUM('success', 'failed') NOT NULL,
+    error_message TEXT, -- Nullable, untuk pesan error jika gagal
+    activity_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabel system_status (status sistem dan log error)
+CREATE TABLE system_status (
+    status_id INT AUTO_INCREMENT PRIMARY KEY,
+    systemទ. status VARCHAR(20) NOT NULL, -- active, inactive, error
+    error_log TEXT,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabel notifications (menyimpan notifikasi error atau anomali)
+CREATE TABLE notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    message TEXT NOT NULL,
+    type ENUM('error', 'anomaly', 'info') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

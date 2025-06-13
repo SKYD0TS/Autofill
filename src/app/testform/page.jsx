@@ -5,10 +5,11 @@ import LogoutButton from "@/components/GoogleIO/OauthLogoutButton";
 
 import * as QuestionComponents from '@/components/FormComponent';
 import { redirect, useRouter, useSearchParams } from "next/navigation";
+
+// !INFO for cold caching
 // const formData = require('@/data/formData.json');
 
 export default function Home() {
-    // const items = useMemo(() => restructureFormData(formData), [formData]);
     const { data: session, SessionStatus } = useSession()
     const [data, setData] = useState({});
     const [formData, setFormData] = useState();
@@ -17,15 +18,14 @@ export default function Home() {
     const [invalidForm, setInvalidForm] = useState(false);
     const [items, setItems] = useState([]);
     const [redirectStatus, setRedirectStatus] = useState();
-    // const router = useRouter();
-    // const formurl = router.query.formurl; 
+    const router = useRouter();
     const searchParams = useSearchParams()
     const formurl = searchParams.get('formurl')
     useEffect(() => {
         if (session && session?.accessToken && typeof formData == "undefined") {
             const fetchGoogleForm = async () => {
                 try {
-                    const res = await fetch(`/api/google-form?accessToken=${session.accessToken}&formurl=${formurl}`);
+                                        const res = await fetch(`/api/google-form?accessToken=${session.accessToken}&formurl=${formurl}`);
                     const data = await res.json();
                     setRedirectStatus(data.status)
                     setFormData(data);
@@ -51,7 +51,6 @@ export default function Home() {
     }, [formData])
 
     useEffect(() => {
-        // Iterate over the options and set invalid form flag
         let isInvalid = false;
 
         items.forEach((item) => {
@@ -71,7 +70,7 @@ export default function Home() {
         });
 
         setInvalidForm(isInvalid);
-    }, [data, items]); // Run this effect when data or items change
+    }, [data, items]);
 
 
     const updateChance = (qid, index, newValue) => {
@@ -182,11 +181,6 @@ export default function Home() {
             return acc;
         }, {});
         let urls = []
-        // console.log(invalidForm)
-        // const pickedUrl = generatePickedURL(pickAll(formInputData), responderUri);
-        // console.log(pickedUrl)
-
-
         if (!invalidForm) {
             for (let r = 0; r < respondCount; r++) {
                 const pickedUrl = generatePickedURL(pickAll(formInputData), responderUri);
@@ -194,25 +188,7 @@ export default function Home() {
                 urls.push(pickedUrl)
             }
         }
-
-
         console.log(invalidForm)
-        // try {
-        //     const res = await fetch('/api/send-responds', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //         },
-        //         body: JSON.stringify({urls:urls}), // Send data as JSON
-        //     });
-
-        //     const data = await res.json();
-        //     // setMessage(data.message); // Update state with the response
-        // } catch (error) {
-        //     console.error('Error:', error);
-        //     // setMessage('Error calling the API');
-        // }
-
     };
 
     if (!items) {
@@ -584,11 +560,3 @@ const generatePickedURL = (data, url) => {
 
     return `${responderUrl}?${params.toString()}`;
 };
-
-// `undefined
-// ?entry.894418696=Option+1
-// &entry.894418696=Option+2
-// &entry.894418696=Option+3
-// &entry.894418696.other_option_response=op4
-// &entry.894418696=__other_option__
-// &entry.894418696=op5`

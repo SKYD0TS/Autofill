@@ -1,8 +1,38 @@
-"use client";
-import { signOut } from "next-auth/react";
+import styles from "@/app/oauthOutButton.module.css"
+import { signOut, useSession } from "next-auth/react";
+import { useEffect, useState } from 'react';
+import feather from "feather-icons"
+const Dropdown = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { data: session, SessionStatus } = useSession()
+  
+  useEffect(() => {
+    if(isOpen==true){
+      feather.replace(); // Replaces <i> elements with feather icons
+    }
+  }, [isOpen]);
 
-export default function LogoutButton() {
+  // Toggle dropdown visibility
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
-    <button onClick={() => signOut("google")} style={{border:"1px solid red"}} >Logout</button>
+    <div className="dropdown">
+      <button onClick={toggleDropdown} className={styles["dropdown-toggle"]}>
+        {session.user.name}
+      </button>
+      {isOpen && (
+        <ul className={styles["dropdown-menu"]}>
+          <li><a href="#">
+            Get tokens <i data-feather="shopping-bag"></i></a></li>
+          <hr style={{margin:'0',paddingLeft:"0.5rem"}}/>
+          <li className={styles.logout}><button onClick={()=>{signOut("google")}}>
+            Logout <i data-feather="log-out"></i></button></li>
+        </ul>
+      )}
+    </div>
   );
-}
+};
+
+export default Dropdown;
