@@ -14,20 +14,19 @@ export default function Home() {
     const [formInput, setFormInput] = useState({ name: "form-input", value: "" })
     const [formInputIsValid, setFormInputIsValid] = useState(-1) // -1 null, 0 invalid, 1 valid, 2 responder link, 3 401, 4 no session
     const searchParams = useSearchParams()
-
-    const failedFormUrl = searchParams.get('formurlfail')
     useEffect(() => {
-        if (failedFormUrl) {
-            setFormInputIsValid(failedFormUrl)
-        }
-    }, [failedFormUrl])
+        const failedFormUrl = searchParams.get('formurlfail')
+        setFormInputIsValid(failedFormUrl)
+        feather.replace();  // Replaces <i> elements with feather icons
+    }, []);
+
 
     function handleFormInputChange(value) {
         setFormInput(prev => {
             return { ...prev, value: value };
         })
     }
-    
+
 
     useEffect(() => {
         if (formInput.value.includes("docs.google.com")) {
@@ -46,10 +45,6 @@ export default function Home() {
             setFormInputIsValid(0)
         }
     }, [formInput])
-    
-    useEffect(() => {
-        feather.replace();  // Replaces <i> elements with feather icons
-    }, []);
 
     return (
         <div className="container">

@@ -20,7 +20,7 @@ const Dropdown = () => {
   return (
     <div className="dropdown">
       <button onClick={toggleDropdown} className={styles["dropdown-toggle"]}>
-        {session.user.name}
+        {session?.user.name??null}
       </button>
       {isOpen && (
         <ul className={styles["dropdown-menu"]}>

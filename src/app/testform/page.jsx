@@ -1,6 +1,6 @@
 "use client"
 import { useSession } from "next-auth/react"
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import LogoutButton from "@/components/GoogleIO/OauthLogoutButton";
 
 import * as QuestionComponents from '@/components/FormComponent';
@@ -22,11 +22,14 @@ export default function Home() {
     const searchParams = useSearchParams()
     const formurl = searchParams.get('formurl')
     useEffect(() => {
+    },[])
+    useEffect(() => {
         if (session && session?.accessToken && typeof formData == "undefined") {
             const fetchGoogleForm = async () => {
                 try {
-                    const res = await fetch(`/api/google-form?accessToken=${session.accessToken}&formurl=${formurl}`);
+                    const res = await fetch(`/api/google-form?accessToken=${session?.accessToken}&formurl=${formurl}`);
                     const data = await res.json();
+                    console.log(data)
                     setRedirectStatus(data.status)
                     setFormData(data);
                     setResponderUri(data.responderUri);
@@ -36,7 +39,7 @@ export default function Home() {
             };
             fetchGoogleForm();
         }
-    }, [session]);
+    }, [session, formurl]);
     useEffect(() => {
         if (!formData) {
             return
@@ -192,7 +195,6 @@ export default function Home() {
             alert("ada form yang belum terisi")
             return
         }
-        console.log(urls,"-----")
         try {
             const response = await fetch('/api/send-response', {
                 method: 'POST',
@@ -221,11 +223,12 @@ export default function Home() {
     }
 
     return (
+        <Suspense fallback={<div className="suspense-fallback"></div>}>
         <div>
-            <h1>Welcome, {session?.user.name}!</h1>
-            <p>Your email: {session?.user.email}</p>
+            <h1>Welcome, {session?.user.name??null}!</h1>
+            <p>Your email: {session?.user.email??null}</p>
             <LogoutButton />
-            <input type="number" value={respondCount} onChange={(e) => { setRespondCount(e.target.value) }} />
+            <label htmlFor="">respond count: </label><input type="number" value={respondCount} onChange={(e) => { setRespondCount(e.target.value) }} />
             <form onSubmit={onSubmit} action={"/result"}>
                 {items.map((item) => {
                     const qid = item.questionId;
@@ -435,6 +438,7 @@ export default function Home() {
                 <button type="submit">SUBMIT</button>
             </form>
         </div>
+        </Suspense>
     );
 }
 

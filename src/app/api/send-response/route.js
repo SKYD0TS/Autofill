@@ -1,7 +1,8 @@
 // app/api/fetchData/route.js
 
+import { DEFAULT_RUNTIME_WEBPACK } from 'next/dist/shared/lib/constants';
 import { NextResponse } from 'next/server';
-const DELAY_MS = 200
+const DELAY_MS = 500
 export async function POST(req) {
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -12,33 +13,34 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Invalid URLs array' }, { status: 400 });
     }
 
-    // Make GET requests to all URLs in parallel
-    const fetchPromises = urls.map((url, index) =>
-      delay(index * 1000) // Introducing a delay between each request (1000ms = 1 second)
-        .then(() => {
-          return fetch(url)
-            .then(res => {
-              // Check if the response status is not in the 200-299 range
-              if (!res.ok) {
-                console.log("FAILED",url)
-                return { url, success: false, status: res.status };
-              }
-              console.log("SUCCESS",url)
-              return { url, success: true, status: res.status };
-            })
-            .catch(error => {
-              // If an error occurs (e.g., network error), mark the URL as failed
-              return { url, success: false, error: error.message };
-            });
-        })
-    );
+    const fetchPromises = urls.map(async (url, index) => {
+      return await delay(DELAY_MS*index).then(() => {
+
+        return fetch(url)
+          .then(res => {
+            if (!res.ok) {
+              console.log("FAILED", url);
+              return { url, success: false, status: res.status };
+            }
+            console.log("SUCCESS", url);
+            return { url, success: true, status: res.status };
+          })
+          .catch(error => {
+            return { url, success: false, error: error.message };
+          });
+      });
+    }) // Add delay based on index (e.g., 1 second per request)
+
 
 
     // Wait for all requests to complete
     const results = await Promise.all(fetchPromises);
+    console.log({results})
 
     // Check if any of the requests failed
-    const failedRequests = results.filter(result => !result.success);
+    const failedRequests = results.filter(res => {
+      return !res.success
+    });
 
     if (failedRequests.length > 0) {
       return NextResponse.json({ failedRequests }, { status: 400 });
