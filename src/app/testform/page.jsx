@@ -25,7 +25,7 @@ export default function Home() {
         if (session && session?.accessToken && typeof formData == "undefined") {
             const fetchGoogleForm = async () => {
                 try {
-                                        const res = await fetch(`/api/google-form?accessToken=${session.accessToken}&formurl=${formurl}`);
+                    const res = await fetch(`/api/google-form?accessToken=${session.accessToken}&formurl=${formurl}`);
                     const data = await res.json();
                     setRedirectStatus(data.status)
                     setFormData(data);
@@ -160,6 +160,7 @@ export default function Home() {
     }, [items]);
 
     const onSubmit = async (e) => {
+        console.log("run")
         e.preventDefault()
         const formInputData = Object.entries(data).reduce((acc, [qid, entries]) => {
             let found = items.find((e) => {
@@ -184,10 +185,34 @@ export default function Home() {
         if (!invalidForm) {
             for (let r = 0; r < respondCount; r++) {
                 const pickedUrl = generatePickedURL(pickAll(formInputData), responderUri);
-                console.log(pickedUrl)
+                console.log(pickedUrl,"sss")
                 urls.push(pickedUrl)
             }
+        }else{
+            alert("ada form yang belum terisi")
+            return
         }
+        console.log(urls,"-----")
+        try {
+            const response = await fetch('/api/send-response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ urls:urls }), // Send the URLs in the request body
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log(data.message); // Success message
+            } else {
+                console.log(data.failedRequests); // Display failed URLs
+            }
+        } catch (error) {
+            console.log('Failed to fetch data', error);
+        }
+
         console.log(invalidForm)
     };
 
@@ -514,15 +539,30 @@ function pickAll(data) {
         const isIndependent = options.some(opt => opt.independentChance === true);
         const isRequired = options.some(opt => opt.isRequired === true);
 
+        // Handle independent options separately
         if (isIndependent) {
-            console.log(qid)
             let picked = independentPick(options);
+
+            // Check if no options were picked and if it's required, pick randomly
             if (isRequired && picked.length < 1) {
                 picked = options[Math.floor(Math.random() * options.length)];
             }
-            result[qid] = picked
+
+            // Handle "Other" options if they exist and are independent
+            const otherOptions = options.filter(opt => opt.isOther);
+
+            // If no other options were picked, pick randomly
+            if (otherOptions.length === 0) {
+                picked = [options[Math.floor(Math.random() * options.length)]];
+            } else if (otherOptions.length === 1) {
+                // If exactly one "Other" option, pick that one
+                picked = [otherOptions[0]];
+            }
+
+            result[qid] = picked;
         } else {
-            const picked = [weightedPick(options)]
+            // For non-independent options, just pick a weighted option
+            const picked = [weightedPick(options)];
             result[qid] = picked;
         }
     }
@@ -530,32 +570,24 @@ function pickAll(data) {
     return result;
 }
 
-const generatePickedURL = (data, url) => {
-    const params = new URLSearchParams();
-    const responderUrl = url.replace(/viewform/, "formResponse")
 
-    Object.entries(data).forEach(([qid, entries]) => {
-        let otherOptionHasBeenPicked
-        const otherOptions = data[qid].options.filter(obj => obj.isOther)
-        let randomPick
-        if (otherOptions.length > 1 && otherOptionHasBeenPicked == null) {
-            randomPick = otherOptions[Math.floor(Math.random() * otherOptions.length)];
-        } else if (otherOptions.length == 1) {
-            randomPick = otherOptions[0];
-        }
+const generatePickedURL = (pickedData, url) => {
+    const params = new URLSearchParams();
+    const responderUrl = url.replace(/viewform/, "formResponse");
+
+    Object.entries(pickedData).forEach(([qid, entries]) => {
         entries.forEach(entry => {
             if (entry.chance > 0) {
-                if (entry.isOther && entry == randomPick) {
+                if (entry.isOther && entry.option === "__other_option__") {
                     params.append(`entry.${qid}.other_option_response`, entry.option);
                     params.append(`entry.${qid}`, "__other_option__");
                 } else if (!entry.isOther) {
                     params.append(`entry.${qid}`, entry.option);
                 }
             } else {
-                console.warn(`${qid} is empty`)
+                console.warn(`${qid} is empty`);
             }
         });
-        otherOptionHasBeenPicked = null
     });
 
     return `${responderUrl}?${params.toString()}`;
