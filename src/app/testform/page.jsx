@@ -9,7 +9,7 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 // !INFO for cold caching
 // const formData = require('@/data/formData.json');
 
-export default function Home() {
+function Home() {
     const { data: session, SessionStatus } = useSession()
     const [data, setData] = useState({});
     const [formData, setFormData] = useState();
@@ -607,3 +607,9 @@ const generatePickedURL = (pickedData, url, formUrl) => {
 
     return `${responderUrl}?${params.toString()}`;
 };
+
+export default function page(){
+    return (
+        <Suspense fallback={<div className="suspense-fallback">loading...</div>}><Home/></Suspense>
+    )
+}
