@@ -6,7 +6,7 @@ import LogoutButton from "@/components/GoogleIO/OauthLogoutButton";
 import '@/app/autofill.css';
 import { redirect, useSearchParams } from "next/navigation";
 import feather from 'feather-icons';
-
+const FORM_PARSE_PAGE = 'testform'
 function Home() {
     const { data: session, status } = useSession();
     const [formInput, setFormInput] = useState({ name: "form-input", value: "" });

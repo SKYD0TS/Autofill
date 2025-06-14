@@ -52,6 +52,7 @@ function Home() {
         }
     }, [session, formurl]);
     useEffect(() => {
+        console.log(formData)
         if (!formData) {
             return
         }
@@ -60,7 +61,7 @@ function Home() {
         } else if (redirectStatus == 401) {
             redirect('/?formurlfail=3')
         } else if (formData.error) {
-            redirect('/?formurlfail=1')
+            // redirect('/?formurlfail=1')
         }
     }, [formData])
 
