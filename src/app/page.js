@@ -7,13 +7,13 @@ import '@/app/autofill.css';
 import { redirect, useSearchParams } from "next/navigation";
 import feather from 'feather-icons';
 
-export default function Home() {
+function Home() {
     const { data: session, status } = useSession();
     const [formInput, setFormInput] = useState({ name: "form-input", value: "" });
     const [formInputIsValid, setFormInputIsValid] = useState(-1); // -1 null, 0 invalid, 1 valid, 2 responder link, 3 401, 4 no session
+    const searchParams = useSearchParams();
     
     useEffect(() => {
-        const searchParams = useSearchParams();
         setFormInputIsValid(searchParams.get('formurlfail'));
         feather.replace();  // Replaces <i> elements with feather icons
     }, []);
@@ -50,8 +50,6 @@ export default function Home() {
     }, [formInput, session]); // The effect depends on formInput and session
 
     return (
-        <Suspense fallback={<div className="suspense-fallback">loading...</div>}>
-
         <div className="container">
             <div className="top-half">
                 <div className="header">
@@ -103,8 +101,11 @@ export default function Home() {
                 </main>
             </div>
         </div>
-        </Suspense>
-
     );
 }
 
+export default function page(){
+    return (
+        <Suspense fallback={<div className="suspense-fallback">loading...</div>}><Home/></Suspense>
+    )
+}

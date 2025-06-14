@@ -20,6 +20,7 @@ export default function Home() {
     const [redirectStatus, setRedirectStatus] = useState();
     const [formurl, setformurl] = useState("");
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     const [isClient, setIsClient] = useState(false); // To ensure client-side execution
     useEffect(() => {
@@ -28,7 +29,7 @@ export default function Home() {
 
     useEffect(() => {
         if (isClient) {
-            setformurl(useSearchParams().get('formurl'));
+            setformurl(searchParams.get('formurl'));
         }
     },);
 
