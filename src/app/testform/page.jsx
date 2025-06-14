@@ -588,7 +588,9 @@ function pickAll(data) {
 
 
 const generatePickedURL = (pickedData, url, formUrl) => {
-    const params = formUrl;
+    // const params = formUrl;
+    const params = new URLSearchParams();
+
     const responderUrl = url.replace(/viewform/, "formResponse");
 
     Object.entries(pickedData).forEach(([qid, entries]) => {
