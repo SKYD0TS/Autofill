@@ -1,6 +1,6 @@
 'use client'
 import { useSession } from "next-auth/react"; // Access session hook
-import { useEffect, useState,  Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 
 import LoginButton from "@/components/GoogleIO/OauthLoginButton";
 import LogoutButton from "@/components/GoogleIO/OauthLogoutButton";
@@ -47,7 +47,7 @@ export default function Home() {
     }, [formInput])
 
     return (
-        <Suspense>
+        <Suspense fallback={<div className="suspense-fallback"></div>}>
             <div className="container">
                 <div className="top-half">
                     <div className="header">
