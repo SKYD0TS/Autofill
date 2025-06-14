@@ -18,11 +18,21 @@ export default function Home() {
     const [invalidForm, setInvalidForm] = useState(false);
     const [items, setItems] = useState([]);
     const [redirectStatus, setRedirectStatus] = useState();
+    const [formurl, setformurl] = useState("");
     const router = useRouter();
-    const searchParams = useSearchParams()
-    const formurl = searchParams.get('formurl')
+
+    const [isClient, setIsClient] = useState(false); // To ensure client-side execution
     useEffect(() => {
-    },[])
+        setIsClient(true); // Set to true once the component is mounted on the client
+    }, []);
+
+    useEffect(() => {
+        if (isClient) {
+            setformurl(useSearchParams().get('formurl'));
+        }
+    },);
+
+
     useEffect(() => {
         if (session && session?.accessToken && typeof formData == "undefined") {
             const fetchGoogleForm = async () => {
@@ -187,11 +197,11 @@ export default function Home() {
         let urls = []
         if (!invalidForm) {
             for (let r = 0; r < respondCount; r++) {
-                const pickedUrl = generatePickedURL(pickAll(formInputData), responderUri);
-                console.log(pickedUrl,"sss")
+                const pickedUrl = generatePickedURL(pickAll(formInputData), responderUri, formurl);
+                console.log(pickedUrl, "sss")
                 urls.push(pickedUrl)
             }
-        }else{
+        } else {
             alert("ada form yang belum terisi")
             return
         }
@@ -201,7 +211,7 @@ export default function Home() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ urls:urls }), // Send the URLs in the request body
+                body: JSON.stringify({ urls: urls }), // Send the URLs in the request body
             });
 
             const data = await response.json();
@@ -224,220 +234,220 @@ export default function Home() {
 
     return (
         <Suspense fallback={<div className="suspense-fallback"></div>}>
-        <div>
-            <h1>Welcome, {session?.user.name??null}!</h1>
-            <p>Your email: {session?.user.email??null}</p>
-            <LogoutButton />
-            <label htmlFor="">respond count: </label><input type="number" value={respondCount} onChange={(e) => { setRespondCount(e.target.value) }} />
-            <form onSubmit={onSubmit} action={"/result"}>
-                {items.map((item) => {
-                    const qid = item.questionId;
-                    const values = data[qid] || [];
-                    const totalChance = parseFloat(values.reduce((acc, o) => acc + o.chance, 0))
+            <div>
+                <h1>Welcome, {session?.user.name ?? null}!</h1>
+                <p>Your email: {session?.user.email ?? null}</p>
+                <LogoutButton />
+                <label htmlFor="">respond count: </label><input type="number" value={respondCount} onChange={(e) => { setRespondCount(e.target.value) }} />
+                <form onSubmit={onSubmit} action={"/result"}>
+                    {items.map((item) => {
+                        const qid = item.questionId;
+                        const values = data[qid] || [];
+                        const totalChance = parseFloat(values.reduce((acc, o) => acc + o.chance, 0))
 
-                    //text questions
-                    if (item.questionText) {
+                        //text questions
+                        if (item.questionText) {
+                            return (
+                                <div key={item.itemId}>
+                                    <hr />
+                                    <p className="question-required">{item.required ? "required" : null}</p>
+                                    <h4>{item.title} {item.questionId}</h4>
+                                    <ul>
+                                        {/* {options.map((opt, idx) => */}
+                                        {values.map((opt, idx) =>
+                                            <li style={{ display: 'flex', gap: '1rem' }} key={`${qid}_${idx}`}>
+                                                {item.type == "SHORT_ANSWER" ?
+                                                    <input
+                                                        placeholder="sa"
+                                                        value={opt.option}
+                                                        onChange={(e) => updateOption(qid, idx, e.target.value)}
+                                                    />
+                                                    :
+                                                    <textarea
+                                                        placeholder="sa"
+                                                        value={opt.option}
+                                                        onChange={(e) => updateOption(qid, idx, e.target.value)}
+                                                    ></textarea>
+                                                }
+                                                <input
+                                                    value={opt.chance}
+                                                    type="range"
+                                                    min="0"
+                                                    max="100"
+                                                    step={1}
+                                                    placeholder="Chance"
+                                                    onChange={(e) => updateChance(qid, idx, e.target.value)}
+                                                    tabIndex={-1}
+                                                />
+                                                <input
+                                                    value={opt.chance}
+                                                    type="number"
+                                                    min="0"
+                                                    max="100"
+                                                    placeholder="Chance"
+                                                    onChange={(e) => updateChance(qid, idx, e.target.value)}
+                                                />
+                                                <p>{totalChance < 1 ? "0.00" : parseFloat(opt.chance / totalChance * 100).toFixed(2).toString()}</p>
+                                                {/* {item.required && totalChance < 1 ?
+                                                <p>no possible option on required question</p> :
+                                                opt.option == "" && opt.chance > 0 ?<p>empty option on required question</p> :
+                                                    null} */}
+                                                {totalChance < 1 && item.required ? (
+                                                    <p>no possible option on required question</p>
+                                                ) : opt.option === "" && opt.chance > 0 ? (
+                                                    <p>empty option on required question</p>
+                                                ) : null}
+                                            </li>
+                                        )}
+                                    </ul>
+                                    <button type="button" onClick={() => addOption(qid)}>+ Add Option</button>
+                                </div>
+                            )
+                        }
+
+                        // grid questions
+                        else if (item.type.includes("GRID")) {
+                            return (
+                                <div key={item.itemId}>
+                                    <hr />
+                                    <h4>{item.title} {item.questionId}</h4>
+                                    <ul>
+                                        {item.questions.map((q, idx) => {
+                                            const qid = q.questionId
+                                            const values = data[qid] || [];
+                                            const totalChance = parseFloat(values.reduce((acc, o) => acc + o.chance, 0))
+                                            return (
+                                                <li key={qid} >
+                                                    <p className="question-required">{q.required ? "required" : null}</p>
+                                                    <label htmlFor="">{q.title} {q.questionId}</label>
+                                                    <ul>
+                                                        {values.map((opt, idx) =>
+                                                            <li key={`${qid}_${idx}`} style={{ display: 'flex', gap: '1rem' }}>
+                                                                <input
+                                                                    value={opt.option}
+                                                                    readOnly={!opt.isOther}
+                                                                    onChange={(e) => {
+                                                                        if (opt.isOther) {
+                                                                            return updateOption(qid, idx, e.target.value);
+                                                                        }
+                                                                    }}
+                                                                    tabIndex={opt.isOther ? 0 : -1}
+                                                                    style={{
+                                                                        width: '150px',
+                                                                        border: 'none',
+                                                                        background: 'transparent',
+                                                                        fontSize: '1rem',
+                                                                        padding: '0.25rem',
+                                                                        minWidth: '150px',
+                                                                        outline: opt.isOther ? '1px solid lightgray' : 'none',
+                                                                        cursor: opt.isOther ? 'text' : 'default'
+                                                                    }}
+                                                                />
+                                                                <input
+                                                                    value={opt.chance}
+                                                                    type="range"
+                                                                    min="0"
+                                                                    max="100"
+                                                                    placeholder="Chance"
+                                                                    onChange={(e) => updateChance(qid, idx, e.target.value)}
+                                                                    tabIndex={-1}
+                                                                />
+                                                                <input
+                                                                    value={opt.chance}
+                                                                    min="0"
+                                                                    max="100"
+                                                                    type="number"
+                                                                    placeholder="Chance"
+                                                                    onChange={(e) => updateChance(qid, idx, e.target.value)}
+                                                                />
+                                                                {item.type.includes("CHECKBOX") ?
+                                                                    null :
+                                                                    <p>{totalChance < 1 ? "0.00" : parseFloat(opt.chance / totalChance * 100).toFixed(2).toString()}</p>}
+
+                                                                {q.required && totalChance < 1 ?
+                                                                    <p>no possible option on required question</p> :
+                                                                    null}
+                                                            </li>
+                                                        )}
+                                                    </ul>
+                                                    {item.options.find((q) => q.isOther == "true") ?
+                                                        <button type="button" onClick={() => addOption(qid)}>+ Add Option</button>
+                                                        : null}
+                                                </li>
+                                            )
+                                        })}
+                                    </ul>
+                                </div>
+                            )
+                        }
                         return (
                             <div key={item.itemId}>
                                 <hr />
                                 <p className="question-required">{item.required ? "required" : null}</p>
                                 <h4>{item.title} {item.questionId}</h4>
+                                {/* <h4>{item.title}</h4> */}
                                 <ul>
-                                    {/* {options.map((opt, idx) => */}
-                                    {values.map((opt, idx) =>
-                                        <li style={{ display: 'flex', gap: '1rem' }} key={`${qid}_${idx}`}>
-                                            {item.type == "SHORT_ANSWER" ?
-                                                <input
-                                                    placeholder="sa"
-                                                    value={opt.option}
-                                                    onChange={(e) => updateOption(qid, idx, e.target.value)}
-                                                />
-                                                :
-                                                <textarea
-                                                    placeholder="sa"
-                                                    value={opt.option}
-                                                    onChange={(e) => updateOption(qid, idx, e.target.value)}
-                                                ></textarea>
-                                            }
-                                            <input
-                                                value={opt.chance}
-                                                type="range"
-                                                min="0"
-                                                max="100"
-                                                step={1}
-                                                placeholder="Chance"
-                                                onChange={(e) => updateChance(qid, idx, e.target.value)}
-                                                tabIndex={-1}
-                                            />
-                                            <input
-                                                value={opt.chance}
-                                                type="number"
-                                                min="0"
-                                                max="100"
-                                                placeholder="Chance"
-                                                onChange={(e) => updateChance(qid, idx, e.target.value)}
-                                            />
-                                            <p>{totalChance < 1 ? "0.00" : parseFloat(opt.chance / totalChance * 100).toFixed(2).toString()}</p>
-                                            {/* {item.required && totalChance < 1 ?
-                                                <p>no possible option on required question</p> :
-                                                opt.option == "" && opt.chance > 0 ?<p>empty option on required question</p> :
-                                                    null} */}
-                                            {totalChance < 1 && item.required ? (
-                                                <p>no possible option on required question</p>
-                                            ) : opt.option === "" && opt.chance > 0 ? (
-                                                <p>empty option on required question</p>
-                                            ) : null}
-                                        </li>
-                                    )}
-                                </ul>
-                                <button type="button" onClick={() => addOption(qid)}>+ Add Option</button>
-                            </div>
-                        )
-                    }
-
-                    // grid questions
-                    else if (item.type.includes("GRID")) {
-                        return (
-                            <div key={item.itemId}>
-                                <hr />
-                                <h4>{item.title} {item.questionId}</h4>
-                                <ul>
-                                    {item.questions.map((q, idx) => {
-                                        const qid = q.questionId
-                                        const values = data[qid] || [];
-                                        const totalChance = parseFloat(values.reduce((acc, o) => acc + o.chance, 0))
+                                    {/* new */}
+                                    {values.map((opt, idx) => {
+                                        const values = data[qid] || []
                                         return (
-                                            <li key={qid} >
-                                                <p className="question-required">{q.required ? "required" : null}</p>
-                                                <label htmlFor="">{q.title} {q.questionId}</label>
-                                                <ul>
-                                                    {values.map((opt, idx) =>
-                                                        <li key={`${qid}_${idx}`} style={{ display: 'flex', gap: '1rem' }}>
-                                                            <input
-                                                                value={opt.option}
-                                                                readOnly={!opt.isOther}
-                                                                onChange={(e) => {
-                                                                    if (opt.isOther) {
-                                                                        return updateOption(qid, idx, e.target.value);
-                                                                    }
-                                                                }}
-                                                                tabIndex={opt.isOther ? 0 : -1}
-                                                                style={{
-                                                                    width: '150px',
-                                                                    border: 'none',
-                                                                    background: 'transparent',
-                                                                    fontSize: '1rem',
-                                                                    padding: '0.25rem',
-                                                                    minWidth: '150px',
-                                                                    outline: opt.isOther ? '1px solid lightgray' : 'none',
-                                                                    cursor: opt.isOther ? 'text' : 'default'
-                                                                }}
-                                                            />
-                                                            <input
-                                                                value={opt.chance}
-                                                                type="range"
-                                                                min="0"
-                                                                max="100"
-                                                                placeholder="Chance"
-                                                                onChange={(e) => updateChance(qid, idx, e.target.value)}
-                                                                tabIndex={-1}
-                                                            />
-                                                            <input
-                                                                value={opt.chance}
-                                                                min="0"
-                                                                max="100"
-                                                                type="number"
-                                                                placeholder="Chance"
-                                                                onChange={(e) => updateChance(qid, idx, e.target.value)}
-                                                            />
-                                                            {item.type.includes("CHECKBOX") ?
-                                                                null :
-                                                                <p>{totalChance < 1 ? "0.00" : parseFloat(opt.chance / totalChance * 100).toFixed(2).toString()}</p>}
-
-                                                            {q.required && totalChance < 1 ?
-                                                                <p>no possible option on required question</p> :
-                                                                null}
-                                                        </li>
-                                                    )}
-                                                </ul>
-                                                {item.options.find((q) => q.isOther == "true") ?
-                                                    <button type="button" onClick={() => addOption(qid)}>+ Add Option</button>
-                                                    : null}
+                                            <li key={qid + "" + idx} style={{ display: 'flex', gap: '1rem' }}>
+                                                <input
+                                                    value={opt.option}
+                                                    readOnly={!opt.isOther}
+                                                    onChange={(e) => {
+                                                        if (opt.isOther) {
+                                                            return updateOption(qid, idx, e.target.value);
+                                                        }
+                                                    }}
+                                                    tabIndex={opt.isOther ? 0 : -1}
+                                                    style={{
+                                                        width: '150px',
+                                                        border: 'none',
+                                                        background: 'transparent',
+                                                        fontSize: '1rem',
+                                                        padding: '0.25rem',
+                                                        minWidth: '150px',
+                                                        outline: opt.isOther ? '1px solid lightgray' : 'none',
+                                                        cursor: opt.isOther ? 'text' : 'default'
+                                                    }}
+                                                />
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="100"
+                                                    value={opt.chance}
+                                                    onChange={(e) => updateChance(qid, idx, e.target.value)}
+                                                    style={{ width: '80px' }}
+                                                    tabIndex={-1}
+                                                />
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    max="100"
+                                                    value={opt.chance}
+                                                    onChange={(e) => updateChance(qid, idx, e.target.value)}
+                                                    style={{ width: '80px' }}
+                                                />
+                                                {item.type.includes("CHECKBOX") ?
+                                                    null
+                                                    : <p>{totalChance < 1 ? "0.00" : parseFloat(opt.chance / totalChance * 100).toFixed(2).toString()}</p>}
+                                                {item.required && totalChance < 1 ?
+                                                    <p>no possible option on required question</p> :
+                                                    null}
                                             </li>
                                         )
                                     })}
                                 </ul>
+                                {item.options.find((q) => q.isOther == true) ?
+                                    <button type="button" onClick={() => addOption(qid, item.type === "CHECKBOX" ? true : false)}>+ Add Option</button>
+                                    : null}
                             </div>
-                        )
-                    }
-                    return (
-                        <div key={item.itemId}>
-                            <hr />
-                            <p className="question-required">{item.required ? "required" : null}</p>
-                            <h4>{item.title} {item.questionId}</h4>
-                            {/* <h4>{item.title}</h4> */}
-                            <ul>
-                                {/* new */}
-                                {values.map((opt, idx) => {
-                                    const values = data[qid] || []
-                                    return (
-                                        <li key={qid + "" + idx} style={{ display: 'flex', gap: '1rem' }}>
-                                            <input
-                                                value={opt.option}
-                                                readOnly={!opt.isOther}
-                                                onChange={(e) => {
-                                                    if (opt.isOther) {
-                                                        return updateOption(qid, idx, e.target.value);
-                                                    }
-                                                }}
-                                                tabIndex={opt.isOther ? 0 : -1}
-                                                style={{
-                                                    width: '150px',
-                                                    border: 'none',
-                                                    background: 'transparent',
-                                                    fontSize: '1rem',
-                                                    padding: '0.25rem',
-                                                    minWidth: '150px',
-                                                    outline: opt.isOther ? '1px solid lightgray' : 'none',
-                                                    cursor: opt.isOther ? 'text' : 'default'
-                                                }}
-                                            />
-                                            <input
-                                                type="range"
-                                                min="0"
-                                                max="100"
-                                                value={opt.chance}
-                                                onChange={(e) => updateChance(qid, idx, e.target.value)}
-                                                style={{ width: '80px' }}
-                                                tabIndex={-1}
-                                            />
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                max="100"
-                                                value={opt.chance}
-                                                onChange={(e) => updateChance(qid, idx, e.target.value)}
-                                                style={{ width: '80px' }}
-                                            />
-                                            {item.type.includes("CHECKBOX") ?
-                                                null
-                                                : <p>{totalChance < 1 ? "0.00" : parseFloat(opt.chance / totalChance * 100).toFixed(2).toString()}</p>}
-                                            {item.required && totalChance < 1 ?
-                                                <p>no possible option on required question</p> :
-                                                null}
-                                        </li>
-                                    )
-                                })}
-                            </ul>
-                            {item.options.find((q) => q.isOther == true) ?
-                                <button type="button" onClick={() => addOption(qid, item.type === "CHECKBOX" ? true : false)}>+ Add Option</button>
-                                : null}
-                        </div>
-                    );
-                })}
-                <button type="submit">SUBMIT</button>
-            </form>
-        </div>
+                        );
+                    })}
+                    <button type="submit">SUBMIT</button>
+                </form>
+            </div>
         </Suspense>
     );
 }
@@ -575,8 +585,8 @@ function pickAll(data) {
 }
 
 
-const generatePickedURL = (pickedData, url) => {
-    const params = new URLSearchParams();
+const generatePickedURL = (pickedData, url, formUrl) => {
+    const params = formUrl;
     const responderUrl = url.replace(/viewform/, "formResponse");
 
     Object.entries(pickedData).forEach(([qid, entries]) => {

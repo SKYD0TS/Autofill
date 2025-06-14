@@ -1,4 +1,5 @@
-import styles from "@/app/oauthOutButton.module.css"
+"use client"
+import styles from "../../app/oauthOutButton.module.css"
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from 'react';
 import feather from "feather-icons"
