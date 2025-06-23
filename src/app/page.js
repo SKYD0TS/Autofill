@@ -23,6 +23,7 @@ function Home() {
     }
 
     useEffect(() => {
+        console.log(session)
         const validateFormLink = async () => {
             if (formInput.value.includes("docs.google.com")) {
                 setFormInputIsValid(1);
@@ -100,12 +101,98 @@ function Home() {
                     </div>
                 </main>
             </div>
+            
+                <div className="bottom-half">
+                    <section className="features" id="features">
+
+
+
+                        <div className="feature-box">
+                            <img src="/images/package-img/Autofill-cepat-icon.svg" />
+                            <h2 className="tagline">Cepat</h2>
+                            <p>Cocok untuk mahasiswa yang dikejar deadline.</p>
+                        </div>
+                        <div className="feature-box">
+                            <img src="/images/package-img/Autofill-aman-icon.svg" />
+                            <h2 className="tagline">Aman</h2>
+                            <p>Data klien aman dari penyalahgunaan.</p>
+                        </div>
+                        <div className="feature-box">
+                            <img src="/images/package-img/Autofill-fleksibel-icon.svg" />
+                            <h2 className="tagline">Fleksibel</h2>
+                            <p>Menyesuaikan kebutuhan responden dan target.</p>
+                        </div>
+                    </section>
+
+                    <section className="trial">
+                        <div className="title">
+                            <h1>Gunakan Free Trial-mu sekarang <p>Dapatkan gratis 5 responden!</p></h1>
+
+                        </div>
+                        <div className="packages">
+                            <div className="package">
+                                <div className="top">
+                                    <p>Diskon 10% dengan kode referral</p>
+                                    <h1>50-99<br /><span className="thin">RESPONDEN</span></h1>
+                                    <div>
+                                        <h2><small className="thin currency">Rp</small> 500<small className="thinner">/responden</small></h2>
+                                        <small>*Lebih hemat 20%</small>
+                                    </div>
+                                </div>
+                                <div className="bottom">
+                                    <button>PILIH PAKET</button>
+                                </div>
+                            </div>
+                            <div className="package active has-bestseller-badge">
+                                <div className="bestseller-badge"><b>BEST SELLER</b></div>
+                                <div className="top">
+                                    <p>Diskon 10% dengan kode referral</p>
+                                    <h1>100-299<br /><span className="thin">RESPONDEN</span></h1>
+                                    <div>
+                                        <h2><small className="thin currency">Rp</small> 400<small className="thinner">/responden</small></h2>
+                                        <small>*Lebih hemat 20%</small>
+                                    </div>
+                                </div>
+                                <div className="bottom">
+                                    <button>PILIH PAKET</button>
+                                </div>
+                            </div>
+                            <div className="package">
+                                <div className="top">
+                                    <p>Diskon 15% dengan kode referral</p>
+                                    <h1>300-700<br /><span className="thin">RESPONDEN</span></h1>
+                                    <div>
+                                        <h2><small className="thin currency">Rp</small> 350<small className="thinner">/responden</small></h2>
+                                        <small>*Lebih hemat 30%</small>
+                                    </div>
+                                </div>
+                                <div className="bottom">
+                                    <button>PILIH PAKET</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <footer className="footer">
+                        <div className="footer-logo"><img src="/images/mark-black.png" /></div>
+                        <div className="footer-links">
+                            <a href="#pricelist">Pricelist</a>
+                            <a href="#home">Home</a>
+                            <a href="#faq">FAQ</a>
+                        </div>
+                        <div className="socials">
+                            <a href="#"><img src="/images/social-icons/autofill-instagram-icon.svg" height={32} /></a>
+                            <a href="#"><img src="/images/social-icons/autofill-whatsapp-icon.svg " height={32} /></a>
+                            <a href="#"><img src="/images/social-icons/autofill-x-icon.svg" height={32} /></a>
+                        </div>
+                        <p>© 2025 AUTOFILL ALL RIGHTS RESERVED</p>
+                    </footer>
+                </div>
         </div>
     );
 }
 
 export default function page(){
     return (
-        <Suspense fallback={<div className="suspense-fallback">loading...</div>}><Home/></Suspense>
+        <Suspense fallback={<div className="suspense-fallback">..loading.</div>}><Home/></Suspense>
     )
 }

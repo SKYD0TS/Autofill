@@ -1,20 +1,25 @@
-// app/api/fetchData/route.js
-
+import prisma from "@/app/lib/prisma"; // Import your Prisma client
 import { DEFAULT_RUNTIME_WEBPACK } from 'next/dist/shared/lib/constants';
 import { NextResponse } from 'next/server';
-const DELAY_MS = 500
 export async function POST(req) {
-  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  const delayFn = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
   try {
     // Get the URLs array from the request body
-    const { urls } = await req.json(); // Expects { "urls": ["url1", "url2", ...] }
-    if (!urls || !Array.isArray(urls)) {
+    const { urls, email, delay } = await req.json(); // Expects { "urls": ["url1", "url2", ...] }
+    if (!urls) {
       return NextResponse.json({ error: 'Invalid URLs array' }, { status: 400 });
     }
-
+    const googleUser = await prisma.googleUser.findFirst({
+      where: { email },
+    });
+    const token = await prisma.token.findFirst({
+      where: { token_id: googleUser.id },
+    });
+    console.log(typeof token, typeof delay)
+    let successCount = 0
     const fetchPromises = urls.map(async (url, index) => {
-      return await delay(DELAY_MS*index).then(() => {
+      return await delayFn(delay * 1000 * index).then(() => {
 
         return fetch(url)
           .then(res => {
@@ -23,19 +28,29 @@ export async function POST(req) {
               return { url, success: false, status: res.status };
             }
             console.log("SUCCESS", url);
+            successCount++
             return { url, success: true, status: res.status };
           })
           .catch(error => {
             return { url, success: false, error: error.message };
           });
       });
-    }) // Add delay based on index (e.g., 1 second per request)
-
-
+    })
+    await Promise.all(fetchPromises).then(async ()=>{
+      const newTokenCount = token.token_count - successCount
+      const newToken = await prisma.token.update({
+        where: { token_id: token.token_id },
+        data: {
+          token_count: newTokenCount,
+          last_updated: new Date(),
+        }
+      })
+    })
+    
 
     // Wait for all requests to complete
     const results = await Promise.all(fetchPromises);
-    console.log({results})
+    console.log({ results })
 
     // Check if any of the requests failed
     const failedRequests = results.filter(res => {

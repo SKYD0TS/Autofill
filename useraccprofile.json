@@ -1,0 +1,31 @@
+{
+  id: '114553687917875502775',
+  name: '13. Muhammad Bintang',
+  email: 'uhhowdoiputthis@gmail.com',
+  image: 'https://lh3.googleusercontent.com/a/ACg8ocL84cPGjwmzNvoN5RvwhL3x7r23qal8TW_3l1daB2ReIvnmfTg=s96-c'
+},
+{
+  provider: 'google',
+  type: 'oauth',
+  providerAccountId: '114553687917875502775',
+  access_token: 'ya29.a0AW4XtxhgOxadEvGiaTUKwNG5Pn5sQwnMCwBvZUNdfaTLZFE896xpU3IPQKAMuPA-dhXkNl_UrcOPxIWgqqkbxrjsN7MoePh80HHnMyVVHDxAnSSphjQXHbTjk2KMxXEpVo9QDystXPKjmcaqalP6SNVCm6pEX-Lcv2bXIZ5F0gaCgYKAcgSARcSFQHGX2MiUXGySkkw68SpKf3K-p1geA0177',
+  expires_at: 1750339195,
+  scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/forms openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/drive.readonly',
+  token_type: 'Bearer',
+  id_token: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiYjc3NGJkODcyOWVhMzhlOWMyZmUwYzY0ZDJjYTk0OGJmNjZmMGYiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIxMDc3NTEwNjY0ODEyLTJyNnYwbWhudDdhYWQ0NmFzbGF0cWhpYmhyMWtwajc5LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiMTA3NzUxMDY2NDgxMi0ycjZ2MG1obnQ3YWFkNDZhc2xhdHFoaWJocjFrcGo3OS5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsInN1YiI6IjExNDU1MzY4NzkxNzg3NTUwMjc3NSIsImVtYWlsIjoidWhob3dkb2lwdXR0aGlzQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhdF9oYXNoIjoiNGRvcGs5OUw2anZzV09tcjJLUVd5QSIsIm5hbWUiOiIxMy4gTXVoYW1tYWQgQmludGFuZyIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NMODRjUEdqd216TnZvTjVSdndoTDN4N3IyM3FhbDhUV18zbDFkYUIyUmVJdm5tZlRnPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IjEzLiBNdWhhbW1hZCIsImZhbWlseV9uYW1lIjoiQmludGFuZyIsImlhdCI6MTc1MDMzNTU5NiwiZXhwIjoxNzUwMzM5MTk2fQ.rLFmNwa88FjwXAxFbyl1uXGfY6QzmfgSS6d0BMqw-AdkPXXmj0kEmEdRBzoHe-SQ-SID_1LyWuafSnBa4loqrDUmfj7HrQp5r5YcT6xinfUczCty6UW8z0kePxyBLKHHie_wcKmKFgAbjqnB5ZATIoAUoYIc8Rr6uSsXe38LSuWWd8dofp0x3DLEqjoLg06S-iQnZJjSyNpzLGUV8hP0oClRsOuETQaRRiDNiTndiFm64Z98IzFzNvL5k3A9buxozg3k0p9efiyWWRSy7FdbIvhFjLvBQ8q_9j3grI-2E3iMTPc4gkeT4ndhs4YKxhlZTD0cbEesunmKmiaUX89G8w'
+},
+{
+  iss: 'https://accounts.google.com',
+  azp: '1077510664812-2r6v0mhnt7aad46aslatqhibhr1kpj79.apps.googleusercontent.com',
+  aud: '1077510664812-2r6v0mhnt7aad46aslatqhibhr1kpj79.apps.googleusercontent.com',
+  sub: '114553687917875502775',
+  email: 'uhhowdoiputthis@gmail.com',
+  email_verified: true,
+  at_hash: '4dopk99L6jvsWOmr2KQWyA',
+  name: '13. Muhammad Bintang',
+  picture: 'https://lh3.googleusercontent.com/a/ACg8ocL84cPGjwmzNvoN5RvwhL3x7r23qal8TW_3l1daB2ReIvnmfTg=s96-c',
+  given_name: '13. Muhammad',
+  family_name: 'Bintang',
+  iat: 1750335596,
+  exp: 1750339196
+}
