@@ -295,7 +295,7 @@ function Home() {
     },);
 
     useEffect(() => {
-        if (session?.user?.email && googleUserToken == null) {
+        if (session?.user?.email) {
             fetchGoogleUserToken();
         }
     }, [session]);
