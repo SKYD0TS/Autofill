@@ -3,9 +3,11 @@ import styles from "../../app/oauthOutButton.module.css"
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from 'react';
 import feather from "feather-icons"
+import CheckoutModal from "@/components/TokenPurchaseModal"
 
 export default function Dropdown(){
   const [isOpen, setIsOpen] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
   const { data: session, SessionStatus } = useSession()
   const [googleUserToken, setGoogleUserToken] = useState(null);
 
@@ -50,13 +52,14 @@ export default function Dropdown(){
       </button>
       {isOpen && (
         <ul className={styles["dropdown-menu"]}>
-          <li><a href="#">
+          <li><a className={styles["get-tokens"]} onClick={() => setOpenModal(true)}>
             Get tokens <i data-feather="shopping-bag"></i></a></li>
           <hr style={{ margin: '0', paddingLeft: "0.5rem" }} />
           <li className={styles.logout}><button onClick={() => { signOut("google") }}>
             Logout <i data-feather="log-out"></i></button></li>
         </ul>
       )}
+      <CheckoutModal open={openModal} onClose={() => setOpenModal(false)} ></CheckoutModal>
     </div>
   );
 };

@@ -6,255 +6,16 @@ import * as QuestionComponents from '@/components/FormComponent';
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import './formstyle.css';
 import feather from 'feather-icons';
+import toast from 'react-hot-toast'
+
 // !INFO for cold caching
 // const formData = require('@/data/formData.json');
 
 function Home() {
     const { data: session, SessionStatus } = useSession()
+    const [sendingStatus, setSendingStatus] = useState(false);
     const [data, setData] = useState({});
-    const [formData, setFormData] = useState({
-        "formId": "16Qc7HE83jrph5NvQEqGcQjQyy58MgVj3eyeuWMziOwg",
-        "info": {
-            "title": "Test",
-            "description": "ts test",
-            "documentTitle": "fulltest"
-        },
-        "settings": {
-            "emailCollectionType": "DO_NOT_COLLECT"
-        },
-        "revisionId": "000000ad",
-        "responderUri": "https://docs.google.com/forms/d/e/1FAIpQLSdi8v0DHEWvSg-HkPbOopq5ej79pba_njR1pYhfbjNCbOld0Q/viewform",
-        "items": [
-            {
-                "itemId": "100812a8",
-                "title": "-Short answer",
-                "questionItem": {
-                    "question": {
-                        "questionId": "3cdeef13",
-                        "required": true,
-                        "textQuestion": {}
-                    }
-                }
-            },
-            {
-                "itemId": "405a3d7a",
-                "title": "-Paragraph",
-                "questionItem": {
-                    "question": {
-                        "questionId": "469fc9bd",
-                        "required": true,
-                        "textQuestion": {
-                            "paragraph": true
-                        }
-                    }
-                }
-            },
-            {
-                "itemId": "2d817e03",
-                "title": "-Multiple Choice",
-                "questionItem": {
-                    "question": {
-                        "questionId": "4588b4ea",
-                        "required": true,
-                        "choiceQuestion": {
-                            "type": "RADIO",
-                            "options": [
-                                {
-                                    "value": "Option 1"
-                                },
-                                {
-                                    "value": "Option 2"
-                                },
-                                {
-                                    "value": "Option 3"
-                                },
-                                {
-                                    "isOther": true
-                                }
-                            ]
-                        }
-                    }
-                }
-            },
-            {
-                "itemId": "677876d4",
-                "title": "-Checkbox",
-                "questionItem": {
-                    "question": {
-                        "questionId": "354fbf08",
-                        "required": true,
-                        "choiceQuestion": {
-                            "type": "CHECKBOX",
-                            "options": [
-                                {
-                                    "value": "Option 1"
-                                },
-                                {
-                                    "value": "Option 2"
-                                },
-                                {
-                                    "value": "Option 3"
-                                },
-                                {
-                                    "isOther": true
-                                }
-                            ]
-                        }
-                    }
-                }
-            },
-            {
-                "itemId": "28624453",
-                "title": "-Dropdown",
-                "questionItem": {
-                    "question": {
-                        "questionId": "2ebb19e7",
-                        "required": true,
-                        "choiceQuestion": {
-                            "type": "DROP_DOWN",
-                            "options": [
-                                {
-                                    "value": "Option 1"
-                                },
-                                {
-                                    "value": "Option 2"
-                                },
-                                {
-                                    "value": "Option 3"
-                                }
-                            ]
-                        }
-                    }
-                }
-            },
-            {
-                "itemId": "065f9a4b",
-                "title": "-Linear scale",
-                "questionItem": {
-                    "question": {
-                        "questionId": "5b406587",
-                        "required": true,
-                        "scaleQuestion": {
-                            "low": 1,
-                            "high": 5,
-                            "lowLabel": "bad",
-                            "highLabel": "good"
-                        }
-                    }
-                }
-            },
-            {
-                "itemId": "36e54d49",
-                "title": "-Ratings",
-                "questionItem": {
-                    "question": {
-                        "questionId": "3dff5f9f",
-                        "required": true,
-                        "ratingQuestion": {
-                            "ratingScaleLevel": 5,
-                            "iconType": "STAR"
-                        }
-                    }
-                }
-            },
-            {
-                "itemId": "3b1cd726",
-                "questionGroupItem": {
-                    "questions": [
-                        {
-                            "questionId": "10ab4c0f",
-                            "required": true,
-                            "rowQuestion": {
-                                "title": "Row 1"
-                            }
-                        },
-                        {
-                            "questionId": "060669f0",
-                            "required": true,
-                            "rowQuestion": {
-                                "title": "Row 2"
-                            }
-                        },
-                        {
-                            "questionId": "78e152a0",
-                            "required": true,
-                            "rowQuestion": {
-                                "title": "Row 3"
-                            }
-                        }
-                    ],
-                    "grid": {
-                        "columns": {
-                            "type": "RADIO",
-                            "options": [
-                                {
-                                    "value": "Column 1"
-                                },
-                                {
-                                    "value": "Column 2"
-                                },
-                                {
-                                    "value": "Column 3"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "title": "-Multiple-choice grid"
-            },
-            {
-                "itemId": "69a40a49",
-                "questionGroupItem": {
-                    "questions": [
-                        {
-                            "questionId": "1afeb843",
-                            "required": true,
-                            "rowQuestion": {
-                                "title": "Row 1"
-                            }
-                        },
-                        {
-                            "questionId": "3870e9ed",
-                            "required": true,
-                            "rowQuestion": {
-                                "title": "Row 2"
-                            }
-                        },
-                        {
-                            "questionId": "0d043cf8",
-                            "required": true,
-                            "rowQuestion": {
-                                "title": "Row 3"
-                            }
-                        }
-                    ],
-                    "grid": {
-                        "columns": {
-                            "type": "CHECKBOX",
-                            "options": [
-                                {
-                                    "value": "Column 1"
-                                },
-                                {
-                                    "value": "Column 2"
-                                },
-                                {
-                                    "value": "Column 3"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "title": "-Tick box grid"
-            }
-        ],
-        "publishSettings": {
-            "publishState": {
-                "isPublished": true,
-                "isAcceptingResponses": true
-            }
-        }
-    });
+    const [formData, setFormData] = useState()
     const [responderUri, setResponderUri] = useState("");
     const [respondCount, setRespondCount] = useState(1);
     const [respondDelay, setRespondDelay] = useState(1);
@@ -464,33 +225,45 @@ function Home() {
         if (!invalidForm) {
             for (let r = 0; r < respondCount; r++) {
                 const pickedUrl = generatePickedURL(pickAll(formInputData), responderUri, formurl);
-                console.log(pickedUrl, "sss")
                 urls.push(pickedUrl)
             }
         } else {
             alert("ada form yang belum terisi")
             return
         }
+
         try {
+            const toastId = toast.loading('Sending response...') // optional: show loading state
+            setSendingStatus(true)
             const response = await fetch('/api/send-response', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ urls: urls, delay: respondDelay, email: session.user.email }), // Send the URLs in the request body
+                body: JSON.stringify({
+                    urls: urls,
+                    delay: respondDelay,
+                    email: session.user.email
+                }),
             });
 
             const data = await response.json();
+
             if (response.ok) {
                 fetchGoogleUserToken()
-                console.log(data.message); // Success message
+                setSendingStatus(false)
+                toast.success(data.message || 'Successfully sent responses!', { id: toastId })
             } else {
                 fetchGoogleUserToken()
-                console.log(data.failedRequests); // Display failed URLs
+                toast.error('Some URLs failed to respond 😢', { id: toastId })
+                console.log(data.failedRequests)
             }
         } catch (error) {
-            console.log('Failed to fetch data', error);
+            toast.dismiss() // remove any pending toasts
+            toast.error('Failed to send response 🚨')
+            console.log('Failed to fetch data', error)
         }
+
 
     };
 
@@ -504,7 +277,7 @@ function Home() {
             <header>
                 <div className="token-count">
                     <i data-feather="user"></i>
-                    <p>000</p>
+                    <p>{googleUserToken}</p>
                     <button>
                         <i data-feather="plus">+</i>
                     </button>
@@ -720,7 +493,7 @@ function Home() {
                                 </div>
                             );
                         })}
-                        <button type="submit" className="submit-btn">Submit</button>
+                        <button type="submit" disabled={sendingStatus} hidden={sendingStatus} className="submit-btn">Submit</button>
                     </form>
 
                 </div>

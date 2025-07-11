@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import prisma from "@/app/lib/prisma"; // Import Prisma client
+import { signOut } from "next-auth/react";
 
 export const handler = NextAuth({
   providers: [
@@ -69,6 +70,7 @@ export const handler = NextAuth({
             refresh_token: newTokens.refresh_token || token.refresh_token,
           }
         } catch (error) {
+          signOut({callbackUrl:'/'})
           console.error("Error refreshing access_token", error)
           token.error = "RefreshTokenError" // Set an error so you can handle it on the client-side
           return token

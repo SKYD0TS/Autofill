@@ -63,6 +63,10 @@
   background-color: #ddd;
 }
 
+.get-tokens{
+  cursor: pointer;
+}
+
 .logout{
   padding: 0px !important;
   & button{

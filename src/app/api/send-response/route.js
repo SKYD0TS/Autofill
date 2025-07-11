@@ -62,7 +62,7 @@ export async function POST(req) {
     }
 
     // If all requests succeeded
-    return NextResponse.json({ message: 'All requests succeeded' }, { status: 200 });
+    return NextResponse.json({ message: 'All requests succeeded',sentResponse:urls.length }, { status: 200 });
   } catch (error) {
     console.error('Error in fetchData API route:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

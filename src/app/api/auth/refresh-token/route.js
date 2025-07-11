@@ -1,4 +1,5 @@
 import { google } from 'googleapis';
+import { signOut } from 'next-auth/react';
 import { NextResponse } from 'next/server';
 
 export async function GET(req) {
@@ -27,6 +28,7 @@ export async function GET(req) {
     return NextResponse.json({ accessToken: newAccessToken }, { status: 200 });
   } catch (error) {
     console.error('Error refreshing access token:', error);
+    signOut({callbackUrl:'/'})
     return NextResponse.json({ error: 'Failed to refresh access token' }, { status: 500 });
   }
 }
