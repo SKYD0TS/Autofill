@@ -14,7 +14,6 @@ export async function POST(req) {
         console.error("Error fetching token:", error);
         return NextResponse.json({ error: "Internal server error", status: 500 })
     }
-    console.log(voucher)
     if(voucher == null){
         return NextResponse.json({status:"not found",discount:0})
     }

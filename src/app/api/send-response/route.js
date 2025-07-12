@@ -16,7 +16,6 @@ export async function POST(req) {
     const token = await prisma.token.findFirst({
       where: { token_id: googleUser.id },
     });
-    console.log(typeof token, typeof delay)
     let successCount = 0
     const fetchPromises = urls.map(async (url, index) => {
       return await delayFn(delay * 1000 * index).then(() => {
@@ -24,10 +23,10 @@ export async function POST(req) {
         return fetch(url)
           .then(res => {
             if (!res.ok) {
-              console.log("FAILED", url);
+              // console.log("FAILED", url);
               return { url, success: false, status: res.status };
             }
-            console.log("SUCCESS", url);
+            // console.log("SUCCESS", url);
             successCount++
             return { url, success: true, status: res.status };
           })
@@ -50,7 +49,6 @@ export async function POST(req) {
 
     // Wait for all requests to complete
     const results = await Promise.all(fetchPromises);
-    console.log({ results })
 
     // Check if any of the requests failed
     const failedRequests = results.filter(res => {

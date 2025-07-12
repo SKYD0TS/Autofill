@@ -6,8 +6,6 @@ export async function GET(request) {
   const url = new URL(request.url);
   const email = url.searchParams.get('email'); // Using URL API to get query parameters
 
-  console.log('Query params:', email); // Debugging log
-
   if (!email) {
     return new Response(JSON.stringify({ error: "Email is required" }), {
       status: 400,
