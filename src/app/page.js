@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import { Suspense, useEffect, useState } from "react";
 import LoginButton from "@/components/GoogleIO/OauthLoginButton";
 import LogoutButton from "@/components/GoogleIO/OauthLogoutButton";
+import CheckoutModal from "@/components/TokenPurchaseModal";
 import '@/app/autofill.css';
 import { redirect, useSearchParams } from "next/navigation";
 import feather from 'feather-icons';
@@ -11,6 +12,8 @@ function Home() {
     const { data: session, status } = useSession();
     const [formInput, setFormInput] = useState({ name: "form-input", value: "" });
     const [formInputIsValid, setFormInputIsValid] = useState(-1); // -1 null, 0 invalid, 1 valid, 2 responder link, 3 401, 4 no session
+    const [openModal, setOpenModal] = useState(false);
+    const [tokenBuyQty, setTokenBuyQty] = useState(1);
     const searchParams = useSearchParams();
     
     useEffect(() => {
@@ -23,7 +26,6 @@ function Home() {
     }
 
     useEffect(() => {
-        console.log(session)
         const validateFormLink = async () => {
             if (formInput.value.includes("docs.google.com")) {
                 setFormInputIsValid(1);
@@ -140,7 +142,7 @@ function Home() {
                                     </div>
                                 </div>
                                 <div className="bottom">
-                                    <button>PILIH PAKET</button>
+                                    <button onClick={() => {setTokenBuyQty(50); setOpenModal(true)}} >PILIH PAKET</button>
                                 </div>
                             </div>
                             <div className="package active has-bestseller-badge">
@@ -154,7 +156,7 @@ function Home() {
                                     </div>
                                 </div>
                                 <div className="bottom">
-                                    <button>PILIH PAKET</button>
+                                    <button onClick={() => {setTokenBuyQty(100); setOpenModal(true)}}>PILIH PAKET</button>
                                 </div>
                             </div>
                             <div className="package">
@@ -167,7 +169,7 @@ function Home() {
                                     </div>
                                 </div>
                                 <div className="bottom">
-                                    <button>PILIH PAKET</button>
+                                    <button onClick={() => {setTokenBuyQty(300); setOpenModal(true)}}>PILIH PAKET</button>
                                 </div>
                             </div>
                         </div>
@@ -187,6 +189,7 @@ function Home() {
                         <p>© 2025 AUTOFILL ALL RIGHTS RESERVED</p>
                     </footer>
                 </div>
+                <CheckoutModal open={openModal} onClose={() => setOpenModal(false)} qty={tokenBuyQty}></CheckoutModal>
         </div>
     );
 }

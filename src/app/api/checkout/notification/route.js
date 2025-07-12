@@ -2,9 +2,6 @@ import prisma from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
 export async function POST(req) {
     const notif = await req.json();
-    console.log(notif)
-    // (Optional) Verify the notification using Midtrans' API again
-    // fetch(`https://api.sandbox.midtrans.com/v2/${notif.order_id}/status`)
 
     if (notif.transaction_status === "settlement") {
         const order = await prisma.tokenPurchase.findUnique({

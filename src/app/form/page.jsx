@@ -67,7 +67,6 @@ function Home() {
                 try {
                     const res = await fetch(`/api/google-form?accessToken=${session?.accessToken}&formurl=${formurl}`);
                     const data = await res.json();
-                    console.log(data)
                     setRedirectStatus(data.status)
                     setFormData(data);
                     setResponderUri(data.responderUri);

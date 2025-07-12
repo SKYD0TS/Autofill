@@ -8,12 +8,10 @@ const GoogleFormAccess = () => {
   const [formData, setFormData] = useState(null);
 
   useEffect(() => {
-    console.log(session)
     if (session && session?.accessToken) {
       const fetchGoogleForm = async () => {
         try {
           const res = await fetch(`/api/google-form?accessToken=${session.accessToken}`);
-          console.log('FETCH:::',`/api/google-form?accessToken=${session.accessToken}`)
           const data = await res.json();
           setFormData(data);
         } catch (error) {

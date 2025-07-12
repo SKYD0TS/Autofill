@@ -2,10 +2,10 @@
 import { signOut, useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
 
-import '@/app/the/modal.css'
+import '@/components/modal.css'
 import { createPortal } from "react-dom"
 
-export default function CheckoutModal({ open, onClose }) {
+export default function CheckoutModal({ open, onClose, qty=1}) {
   const [quantity, setQuantity] = useState(1)
   const [voucher, setVoucher] = useState("")
   const [discount, setDiscount] = useState(0)
@@ -27,6 +27,11 @@ export default function CheckoutModal({ open, onClose }) {
     if (session?.error) signOut({ callbackUrl: "/" })
     if (session?.user?.email) getTransactions()
   }, [session])
+  useEffect(() => {
+    if (open) {
+      setQuantity(qty);
+    }
+  }, [qty, open]);
 
   useEffect(() => {
     if (quantity < 100) setPrice(500)
@@ -47,7 +52,6 @@ export default function CheckoutModal({ open, onClose }) {
       body: JSON.stringify(data)
     })
     const tokenFetch = await response.json()
-    console.log(tokenFetch)
     if (tokenFetch.success) {
       getTransactions()
       window.snap.pay(tokenFetch.token)
@@ -78,7 +82,7 @@ export default function CheckoutModal({ open, onClose }) {
 
   useEffect(() => {
     const script = document.createElement("script")
-    script.src = "https://app.sandbox.midtrans.com/snap/snap.js"
+    script.src = process.env.MT_SCRIPT_SRC
     script.setAttribute("data-client-key", process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY)
     script.async = true
     document.body.appendChild(script)

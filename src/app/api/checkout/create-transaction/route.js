@@ -5,7 +5,7 @@ import { PurchaseStatus } from "@prisma/client";
 
 
 const snap = new Midtrans.Snap({
-  isProduction: false,
+  isProduction: process.env.MT_IS_PRODUCTION,
   serverKey: process.env.MIDTRANS_SERVER_KEY,
 });
 
@@ -33,7 +33,6 @@ export async function POST(req) {
         where: { voucher_code },
       });
     }
-    console.log("+++++++++++++++++++==",voucher)
 
   } catch (error) {
     console.error("Error fetching token:", error);
@@ -46,7 +45,6 @@ export async function POST(req) {
   }else{
     total = subtotal
   }
-  console.log(total)
   
   let voucherUsage
   let tokenPurchase

@@ -2,14 +2,8 @@ import Midtrans from "midtrans-client";
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 
-const snap = new Midtrans.Snap({
-  isProduction: false,
-  serverKey: process.env.MIDTRANS_SERVER_KEY,
-});
-
 export async function POST(req) {
   const { order_id } = await req.json();
-  console.log(order_id,"RUNS")
 
   if (!order_id) {
     return NextResponse.json({ error: "order_id is required" }, { status: 400 });
@@ -36,12 +30,7 @@ export async function POST(req) {
         }
       }
 
-      console.log(parameter,{ 
-        "Content-type": "application/json",
-        "Accept": "application/json",
-        "Authorization": `Basic ${process.env.MIDTRANS_SERVER_KEY}`
-      })
-    const tokenFetch = await fetch("https://app.sandbox.midtrans.com/snap/v1/transactions", {
+    const tokenFetch = await fetch(process.env.MT_TRANSACTIONS_API, {
       headers: { 
         "Content-type": "application/json",
         "Accept": "application/json",
