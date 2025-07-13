@@ -7,7 +7,7 @@ import CheckoutModal from "@/components/TokenPurchaseModal";
 import '@/app/autofill.css';
 import { redirect, useSearchParams } from "next/navigation";
 import feather from 'feather-icons';
-const FORM_PARSE_PAGE = 'testform'
+const FORM_PARSE_PAGE = 'form'
 function Home() {
     const { data: session, status } = useSession();
     const [formInput, setFormInput] = useState({ name: "form-input", value: "" });
