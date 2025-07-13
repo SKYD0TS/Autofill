@@ -85,7 +85,7 @@ model Token {
 model Voucher {
   voucher_id          Int      @id @default(autoincrement())
   voucher_code        String   @unique @db.VarChar(20)
-  discount_percentage Decimal  @db.Decimal(5, 2)
+  discount_percentage Int     
   created_at          DateTime @default(now())
   admin_id            Int
 
