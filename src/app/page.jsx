@@ -3,12 +3,20 @@ import { useSession } from "next-auth/react";
 import { Suspense, useEffect, useState } from "react";
 import LoginButton from "@/components/GoogleIO/OauthLoginButton";
 import LogoutButton from "@/components/GoogleIO/OauthLogoutButton";
-import CheckoutModal from "@/components/TokenPurchaseModal";
+import PdfModal from "@/components/PdfModal";
+import dynamic from "next/dynamic";
+const CheckoutModal = dynamic(
+() => import('@/components/TokenPurchaseModal'),
+  { ssr: false }
+);
+// import CheckoutModal from "@/components/TokenPurchaseModal";
 import '@/app/autofill.css';
 import { redirect, useSearchParams } from "next/navigation";
 import feather from 'feather-icons';
 const FORM_PARSE_PAGE = 'form'
 function Home() {
+    const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
+    const pdfUrl = '/Tutorial_Autofill.pdf';
     const { data: session, status } = useSession();
     const [formInput, setFormInput] = useState({ name: "form-input", value: "" });
     const [formInputIsValid, setFormInputIsValid] = useState(-1); // -1 null, 0 invalid, 1 valid, 2 responder link, 3 401, 4 no session
@@ -30,20 +38,17 @@ function Home() {
             if (formInput.value.includes("docs.google.com")) {
                 setFormInputIsValid(1);
 
-                // Check if it’s an editor link or not
                 if (!formInput.value.includes("edit")) {
                     setFormInputIsValid(2); // Not an editor link
                     return;
                 } 
 
-                // Check if the user is logged in
                 if (!session) {
                     setFormInputIsValid(4); // User is not logged in
                     return;
                 }
 
-                // If everything is valid, proceed with redirect
-                redirect(`/${FORM_PARSE_PAGE}?formurl=${formInput.value}`);
+                // redirect(`/${FORM_PARSE_PAGE}?formurl=${formInput.value}`);
             } else if (formInput.value) {
                 setFormInputIsValid(0); // Invalid link format
             }
@@ -57,8 +62,9 @@ function Home() {
             <div className="top-half">
                 <div className="header">
                     <nav className="nav">
-                        <a href="#faq">FAQ <i data-feather="chevron-down"></i></a>
-                        <div className="dropdown">Pricelist</div>
+                        {/* <a href="/Tutorial_Autofill.pdf" target="_blank">Tutorial</a> */}
+                        <a onClick={()=>{setIsPDFModalOpen(true)}}>Tutorial</a>
+                        <div className="dropdown"><a href="#pricelist">Pricelist</a></div>
                         <div className="dropdown">Socials</div>
                     </nav>
                     <div className="logo">
@@ -83,18 +89,33 @@ function Home() {
                 <main className="hero">
                     <h1>Make your life easier with <strong>Autofill</strong></h1>
                     <p className="tagline">Finish your questionnaire in just one click</p>
-                    <input
-                        type="text"
-                        name={formInput.name}
-                        value={formInput.value}
-                        onChange={(e) => handleFormInputChange(e.target.value)}
-                        placeholder="Ketik link Google Form Anda disini"
-                        className="form-input"
-                    />
+                    <div className="pill-input">
+                        <input
+                            type="text"
+                            name={formInput.name}
+                            value={formInput.value}
+                            onChange={(e) => handleFormInputChange(e.target.value)}
+                            placeholder="Ketik link Google Form Anda disini"
+                            className="form-input"
+                            />
+                        <button onClick={()=>{
+                            if(formInputIsValid == 1){   
+                                redirect(`/${FORM_PARSE_PAGE}?formurl=${formInput.value}`);
+                            }
+                            else{
+                                const msg = formInputIsValid === 0 ? "Link invalid" :
+                                formInputIsValid === 1 ? "Link valid" :
+                                formInputIsValid === 2 ? "Hanya bisa link edit" :
+                                formInputIsValid === 3 ? "Unauthorized" :
+                                formInputIsValid === 4 ? "Please log-in" : null
+                                alert(msg)
+                            }
+                        }}>Mulai</button>
+                    </div>
                     <p>
-                        {formInputIsValid === 0 ? "Invalid link" :
+                        {formInputIsValid === 0 ? "Link invalid" :
                          formInputIsValid === 1 ? "Link valid" :
-                         formInputIsValid === 2 ? "Currently only accept editor link" :
+                         formInputIsValid === 2 ? "Hanya bisa link edit" :
                          formInputIsValid === 3 ? "Unauthorized" :
                          formInputIsValid === 4 ? "Please log-in" : null}
                     </p>
@@ -106,9 +127,6 @@ function Home() {
             
                 <div className="bottom-half">
                     <section className="features" id="features">
-
-
-
                         <div className="feature-box">
                             <img src="/images/package-img/Autofill-cepat-icon.svg" />
                             <h2 className="tagline">Cepat</h2>
@@ -131,7 +149,7 @@ function Home() {
                             <h1>Gunakan Free Trial-mu sekarang <p>Dapatkan gratis 5 responden!</p></h1>
 
                         </div>
-                        <div className="packages">
+                        <div className="packages" id="pricelist">
                             <div className="package">
                                 <div className="top">
                                     <p>Diskon 10% dengan kode referral</p>
@@ -189,7 +207,13 @@ function Home() {
                         <p>© 2025 AUTOFILL ALL RIGHTS RESERVED</p>
                     </footer>
                 </div>
-                <CheckoutModal open={openModal} onClose={() => setOpenModal(false)} qty={tokenBuyQty}></CheckoutModal>
+                {openModal?
+                    <CheckoutModal open={openModal} onClose={() => setOpenModal(false)} qty={tokenBuyQty}></CheckoutModal>
+                : null
+                }
+                {isPDFModalOpen && (
+                    <PdfModal pdfUrl={pdfUrl} onClose={()=>{setIsPDFModalOpen(false)}} />
+                )}
         </div>
     );
 }

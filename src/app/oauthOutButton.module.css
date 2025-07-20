@@ -10,7 +10,7 @@
   min-width: 15rem;
   height: auto;
   padding: 10px;
-  background-color: #4CAF50;
+  background-color: #4F5C80;
   color: white;
   border: none;
   cursor: pointer;
@@ -18,7 +18,7 @@
 }
 
 .dropdown-toggle:hover {
-  background-color: #45a049;
+  background-color: #3f4e76;
 }
 
 .dropdown-menu {

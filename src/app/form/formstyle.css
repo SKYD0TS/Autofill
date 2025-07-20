@@ -1,11 +1,24 @@
 header{
     margin: 0;
-    padding: 0 1rem;
+    padding: 2.1rem 1rem;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     flex: 1 1;
     height: 4rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.back-button{
+  text-decoration: none;
+
+  & a{
+    color: inherit; /* Inherit text color from parent element */
+    text-decoration: none; /* Remove underline */
+    font-weight: inherit; /* Inherit font weight */
+    transition: color 0.3s ease; /* Smooth color transition for hover effects */
+
+  }
 }
 
 .token-count{
@@ -52,15 +65,32 @@ main{
   padding: 1rem 1rem;
 }
 
+.respond-count{
+  display: flex;
+  align-items: center;
+  width: 10rem;
+
+
+}
+.respond-delay{
+  display: flex;
+  align-items: center;
+}
 
 .survey-form {
   font-family: Arial, sans-serif;
-  margin: 20px;
   padding: 20px;
 }
 
 .question-container {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 1.25rem;
   margin-bottom: 20px;
+}
+.question-title-container{
+  display: flex;
+  justify-content: space-between;
 }
 
 .divider {
@@ -119,6 +149,7 @@ main{
 
 /* Basic styles for the range input */
 .chance-range {
+  accent-color: #4F5C80;
   /* -webkit-appearance: none;  Remove default styling in Webkit browsers */
   /* appearance: none; */
   width: 100%;  /* Full width */
@@ -134,7 +165,7 @@ main{
   /* appearance: none; */
   width: 20px;  /* Small thumb width */
   height: 20px;  /* Small thumb height */
-  background: #007bff;  /* Thumb color */
+  background: #4F5C80;  /* Thumb color */
   border-radius: 0;
   cursor: pointer;
   transition: background 0.3s ease;  /* Smooth transition when hover */
@@ -144,7 +175,7 @@ main{
 .chance-range::-moz-range-thumb {
   width: 20px;
   height: 20px;
-  background: #007bff;
+  background: #4F5C80;
   /* border-radius: 0%; */
   cursor: pointer;
   transition: background 0.3s ease;
@@ -175,14 +206,24 @@ main{
   padding: 8px 16px;
   font-size: 1rem;
   border: none;
-  background-color: #007bff;
+  background-color: #4F5C80;
   color: white;
   border-radius: 5px;
   cursor: pointer;
 }
 
 .add-option-btn:hover {
-  background-color: #0056b3;
+  background-color: #3f4e76;
+}
+
+.form-footer{
+  display: flex;
+  align-items: center;
+  gap:1rem;
+
+  & div > label{
+    margin-right: 1rem;
+  }
 }
 
 .submit-btn {
@@ -197,4 +238,47 @@ main{
 
 .submit-btn:hover {
   background-color: #218838;
+}
+
+
+select{
+    border:1px solid #ddd;
+    border-radius: 4px;
+    padding: .75rem;
+    font-size: 1rem;
+    cursor: pointer;
+    &:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+  }
+
+.faker-select{
+  display: flex;
+  align-items: center;
+  gap:1rem;
+
+  & input[type=range]{
+    accent-color: #4F5C80;
+  }
+}
+
+.faker-slider-container{
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  &>label{
+    flex-shrink: 0;
+  }
+}
+
+.faker-slider{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  & input{
+    padding: 0.1rem;
+    margin: 0;
+  }
 }

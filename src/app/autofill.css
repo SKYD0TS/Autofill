@@ -107,6 +107,57 @@ body {
     text-align: center;
     padding: 0rem 4rem 0rem 4rem;
     flex-grow: 1;
+
+    & .pill-input{
+        display: flex;
+        width: 50%;
+        height: 3rem;
+        border-radius: 9999px;
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+
+        & input{
+            flex: 1 1 auto;
+            padding: 0 16px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            background: transparent;
+        }
+        & button{
+            background: linear-gradient(135deg, #1A223E, #4F5C80);
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 100rem; /* Makes it more pill-shaped */
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s ease, transform 0.1s ease;
+
+        }
+        & button:hover {
+            background: linear-gradient(135deg, #4F5C80, #1A223E);
+            transform: scale(1.05);
+
+        }
+
+        /* .hero .form-input {
+            width: 60%;
+            height: 3rem;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 100rem;
+            border: none;
+            width: 500px;
+        }
+
+        .hero .form-input::placeholder {
+            font-size: 1.2rem;
+            text-align: center;
+        } */
+    }
 }
 
 .hero .arrow-down {
@@ -129,20 +180,6 @@ body {
     font-size: 1.75rem;
 }
 
-.hero .form-input {
-    width: 60%;
-    height: 3rem;
-    padding: 10px;
-    margin-top: 20px;
-    border-radius: 100rem;
-    border: none;
-    width: 500px;
-}
-
-.hero .form-input::placeholder {
-    font-size: 1.2rem;
-    text-align: center;
-}
 
 .features {
     display: flex;

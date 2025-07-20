@@ -7,15 +7,27 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import './formstyle.css';
 import feather from 'feather-icons';
 import toast from 'react-hot-toast'
+import { base, en, Faker, id_ID } from '@faker-js/faker';
+const FakerGen = new Faker({
+    locale: [id_ID, en, base],   // tries de, then en, then base
+});
 
-// !INFO for cold caching
+import dynamic from "next/dynamic";
+const CheckoutModal = dynamic(
+    () => import('@/components/TokenPurchaseModal'),
+    { ssr: false }
+);
+
+// !INFO for offline caching
 // const formData = require('@/data/formData.json');
 
 function Home() {
+    const [formData, setFormData] = useState()
     const { data: session, SessionStatus } = useSession()
+    const [openModal, setOpenModal] = useState(false);
     const [sendingStatus, setSendingStatus] = useState(false);
     const [data, setData] = useState({});
-    const [formData, setFormData] = useState()
+    const [genderRatio, setGenderRatio] = useState(50);
     const [responderUri, setResponderUri] = useState("");
     const [respondCount, setRespondCount] = useState(1);
     const [respondDelay, setRespondDelay] = useState(1);
@@ -93,11 +105,13 @@ function Home() {
 
     useEffect(() => {
         let isInvalid = false;
+        if (Object.keys(data).length === 0) return
 
-        items.forEach((item) => {
+        // Object.keys(data).forEach((item) => {
+        Object.entries(data).forEach(([item, value]) => {
+            item = value
             const qid = item.questionId;
             const values = data[qid] || [];
-
             values.forEach((opt) => {
                 const totalChance = parseFloat(values.reduce((acc, o) => acc + o.chance, 0));
                 if (item.required && totalChance < 1) {
@@ -111,7 +125,7 @@ function Home() {
         });
 
         setInvalidForm(isInvalid);
-    }, [data, items]);
+    }, [data]);
 
     const updateChance = (qid, index, newValue) => {
         setData(prev => {
@@ -158,19 +172,22 @@ function Home() {
                     result[`${baseQid}`] = options.map(opt => ({
                         option: opt,
                         chance: 50,
-                        independentChance: true
+                        independentChance: true,
+                        faker: ""
                     }));
                 } else {
                     result[`${baseQid}`] = options.map(opt => ({
                         option: opt,
-                        chance: 50
+                        chance: 50,
+                        faker: ""
                     }));
                 }
             } else if (item.type === 'LINEAR_SCALE' || item.type === 'RATING') {
                 const options = item.options || [];
                 result[`${baseQid}`] = options.map(opt => ({
                     option: opt,
-                    chance: 50
+                    chance: 50,
+                    faker: ""
                 }));
             } else if (item.type === 'MULTIPLE_CHOICE_GRID' || item.type === 'CHECKBOX_GRID') {
                 const options = item.options || [];
@@ -180,19 +197,22 @@ function Home() {
                         result[`${qid}`] = options.map(opt => ({
                             option: opt,
                             chance: 50,
-                            independentChance: true
+                            independentChance: true,
+                            faker: ""
                         }));
                     } else {
                         result[`${qid}`] = options.map(opt => ({
                             option: opt,
                             chance: 50,
+                            faker: ""
                         }));
                     }
                 });
             } else {
                 result[`${baseQid}`] = [{
                     option: '',
-                    chance: 100
+                    chance: 100,
+                    faker: ""
                 }];
             }
         });
@@ -216,14 +236,15 @@ function Home() {
                 chance: entry.chance,
                 isOther: entry.isOther || false,
                 independentChance: entry.independentChance || false,
-                isRequired: found.required ?? false
+                isRequired: found.required ?? false,
+                faker: entry.faker ?? ""
             }));
             return acc;
         }, {});
         let urls = []
         if (!invalidForm) {
             for (let r = 0; r < respondCount; r++) {
-                const pickedUrl = generatePickedURL(pickAll(formInputData), responderUri, formurl);
+                const pickedUrl = generatePickedURL(pickAll(formInputData, items, genderRatio), responderUri, formurl);
                 urls.push(pickedUrl)
             }
         } else {
@@ -255,248 +276,324 @@ function Home() {
             } else {
                 fetchGoogleUserToken()
                 toast.error('Some URLs failed to respond 😢', { id: toastId })
+                setSendingStatus(false)
                 console.log(data.failedRequests)
             }
         } catch (error) {
             toast.dismiss() // remove any pending toasts
+            setSendingStatus(false)
             toast.error('Failed to send response 🚨')
             console.log('Failed to fetch data', error)
         }
-
-
     };
 
-    if (!items) {
-        return
+    function handleFakerSelect(id, faker) {
+        const isTextQuestion = items.find((i) => i.questionId == id).questionText ? true : false
+        if(isTextQuestion){
+            if(faker != ""){
+                updateOption(id, 0, "[autofill.]")
+            }else{
+                updateOption(id, 0, "")
+            }
+        }
+        setData(prev => ({
+            ...prev,
+            [id]: prev[id].map(o => ({ ...o, faker }))
+        }));
+    }
+
+    function FakerSelect({ qid }) {
+        const [selectedFaker, setSelectedFaker] = useState(data[qid]?.[0]?.faker || "");
+        // Sync with parent data state when it changes
+        useEffect(() => {
+            setSelectedFaker(data[qid]?.[0]?.faker || "");
+        }, [data, qid]);
+
+        const handleChange = (e) => {
+            const fakerValue = e.target.value;
+            setSelectedFaker(fakerValue);
+            handleFakerSelect(qid, fakerValue);
+        };
+
+        return (
+            <>
+                <div className="faker-select">
+                    {selectedFaker == "gender" ?
+                        <div className="faker-slider-container">
+                            <label>Laki-Laki</label>
+                            <div className="faker-slider">
+                                <input type="range" value={genderRatio} onChange={(e) => { setGenderRatio(e.target.value) }} />
+                                <label>{`${genderRatio}/${100 - genderRatio}`}</label>
+                            </div>
+                            <label>Perempuan</label>
+                        </div>
+                        : null}
+                    <select value={selectedFaker} onChange={handleChange}>
+                        <option value="">No Faker</option>
+                        <option value="name">Nama</option>
+                        <option value="gender">Gender</option>
+                        <option value="city">Kota</option>
+                    </select>
+                </div>
+            </>
+        );
     }
 
     return (
         <>
-
             <header>
+                <div className="back-button">
+                    <a href="/">
+                        <i data-feather="corner-down-left"></i>Kembali
+                    </a>
+                </div>
                 <div className="token-count">
                     <i data-feather="user"></i>
                     <p>{googleUserToken}</p>
-                    <button>
+                    <button onClick={() => { setOpenModal(true) }}>
                         <i data-feather="plus">+</i>
                     </button>
                 </div>
             </header>
             <main>
                 <div>
-                    <label htmlFor="">respond count: </label><input type="number" min={0} max={googleUserToken} value={respondCount > googleUserToken ? 0 : respondCount} onChange={(e) => { e.target.value <= googleUserToken && e.target.value >= 1 ? setRespondCount(e.target.value) : null }} />
-                    <br />
-                    <label htmlFor="">delay: </label><select onChange={(e) => { setRespondDelay(e.target.value) }} >
-                        <option value="1">1s</option>
-                        <option value="2">2s</option>
-                        <option value="3">3s</option>
-                        <option value="4">4s</option>
-                        <option value="5">5s</option>
-                    </select>
-                    <form onSubmit={onSubmit} action={"/result"} className="survey-form">
-                        {items.map((item) => {
-                            const qid = item.questionId;
-                            const values = data[qid] || [];
-                            const totalChance = parseFloat(values.reduce((acc, o) => acc + o.chance, 0));
+                    {Object.keys(data).length === 0 ? <h2>Loading...</h2>
+                        :
+                        <form onSubmit={onSubmit} action={"/result"} className="survey-form">
+                            <h1>{formData?.info.title}</h1>
+                            <p>{formData?.info.description}</p>
+                            {items.map((item) => {
+                                const qid = item.questionId;
+                                const values = data[qid] || [];
+                                const totalChance = parseFloat(values.reduce((acc, o) => acc + o.chance, 0));
 
-                            // Text questions
-                            if (item.questionText) {
+                                // Text questions
+                                if (item.questionText) {
+                                    return (
+                                        <div key={item.itemId} className="question-container">
+                                            <p className="question-required">{item.required ? "Required" : null}</p>
+                                            <div className="question-title-container">
+                                                <h4 className="question-title">{item.title} {item.questionId}</h4>
+                                                <FakerSelect qid={item.questionId}></FakerSelect>
+                                            </div>
+                                            <ul className="options-list">
+                                                {values.map((opt, idx) => (
+                                                    <li key={`${qid}_${idx}`} className="option-item">
+                                                        <div className="input-container">
+                                                            {item.type === "SHORT_ANSWER" ? (
+                                                                <input
+                                                                    className="short-answer"
+                                                                    placeholder="Short answer"
+                                                                    value={opt.option}
+                                                                    onChange={(e) => updateOption(qid, idx, e.target.value)}
+                                                                />
+                                                            ) : (
+                                                                <textarea
+                                                                    className="long-answer"
+                                                                    placeholder="Long answer"
+                                                                    value={opt.option}
+                                                                    onChange={(e) => updateOption(qid, idx, e.target.value)}
+                                                                ></textarea>
+                                                            )}
+                                                        </div>
+                                                        <div className="chance-container">
+                                                            <input
+                                                                className="chance-range"
+                                                                value={opt.chance}
+                                                                type="range"
+                                                                min="0"
+                                                                max="100"
+                                                                step={1}
+                                                                placeholder="Chance"
+                                                                onChange={(e) => updateChance(qid, idx, e.target.value)}
+                                                            />
+                                                            <input
+                                                                className="chance-number"
+                                                                value={opt.chance}
+                                                                type="number"
+                                                                min="0"
+                                                                max="100"
+                                                                placeholder="Chance"
+                                                                onChange={(e) => updateChance(qid, idx, e.target.value)}
+                                                            />
+                                                            <p className="chance-percentage">
+                                                                {totalChance < 1 ? "0.00" : parseFloat((opt.chance / totalChance) * 100).toFixed(2)}%
+                                                            </p>
+                                                        </div>
+                                                        {totalChance < 1 && item.required ? (
+                                                            <p className="error-message">No possible option on required question</p>
+                                                        ) : opt.option === "" && opt.chance > 0 ? (
+                                                            <p className="error-message">Empty option on required question</p>
+                                                        ) : null}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <button type="button" className="add-option-btn" onClick={() => addOption(qid)}>
+                                                + Add Option
+                                            </button>
+                                        </div>
+                                    );
+                                }
+
+                                // Grid questions (same update as above for grid)
+                                else if (item.type.includes("GRID")) {
+                                    return (
+                                        <div key={item.itemId} className="grid-container">
+                                            <h4 className="question-title">{item.title} {item.questionId}</h4>
+                                            <ul className="grid-list">
+                                                {item.questions.map((q, idx) => {
+                                                    const qid = q.questionId;
+                                                    const values = data[qid] || [];
+                                                    const totalChance = parseFloat(values.reduce((acc, o) => acc + o.chance, 0));
+                                                    return (
+                                                        <li key={qid} className="grid-item">
+                                                            <p className="question-required">{q.required ? "Required" : null}</p>
+                                                            <div className="question-title-container">
+                                                                <label className="grid-question-label">{q.title}</label>
+                                                                <FakerSelect qid={qid}></FakerSelect>
+                                                            </div>
+                                                            <ul className="options-list">
+                                                                {values.map((opt, idx) => (
+                                                                    <li key={`${qid}_${idx}`} className="option-item">
+                                                                        <input
+                                                                            className="grid-input"
+                                                                            value={opt.option}
+                                                                            readOnly={!opt.isOther}
+                                                                            onChange={(e) => {
+                                                                                if (opt.isOther) {
+                                                                                    return updateOption(qid, idx, e.target.value);
+                                                                                }
+                                                                            }}
+                                                                            tabIndex={opt.isOther ? 0 : -1}
+                                                                        />
+                                                                        <div className="chance-container">
+                                                                            <input
+                                                                                className="chance-range"
+                                                                                value={opt.chance}
+                                                                                type="range"
+                                                                                min="0"
+                                                                                max="100"
+                                                                                placeholder="Chance"
+                                                                                onChange={(e) => updateChance(qid, idx, e.target.value)}
+                                                                            />
+                                                                            <input
+                                                                                className="chance-number"
+                                                                                value={opt.chance}
+                                                                                min="0"
+                                                                                max="100"
+                                                                                type="number"
+                                                                                placeholder="Chance"
+                                                                                onChange={(e) => updateChance(qid, idx, e.target.value)}
+                                                                            />
+                                                                            {item.type.includes("CHECKBOX") ? null : (
+                                                                                <p className="chance-percentage">
+                                                                                    {totalChance < 1 ? "0.00" : parseFloat((opt.chance / totalChance) * 100).toFixed(2)}%
+                                                                                </p>
+                                                                            )}
+                                                                        </div>
+                                                                        {q.required && totalChance < 1 ? (
+                                                                            <p className="error-message">No possible option on required question</p>
+                                                                        ) : null}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                            {item.options.find((q) => q.isOther === "true") && (
+                                                                <button type="button" className="add-option-btn" onClick={() => addOption(qid)}>
+                                                                    + Add Option
+                                                                </button>
+                                                            )}
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        </div>
+                                    );
+                                }
+
                                 return (
                                     <div key={item.itemId} className="question-container">
-                                        <hr className="divider" />
                                         <p className="question-required">{item.required ? "Required" : null}</p>
-                                        <h4 className="question-title">{item.title} {item.questionId}</h4>
+                                        <div className="question-title-container">
+                                            <h4 className="question-title">{item.title} {item.questionId}</h4>
+                                            <FakerSelect qid={qid}></FakerSelect>
+                                        </div>
+
                                         <ul className="options-list">
                                             {values.map((opt, idx) => (
-                                                <li key={`${qid}_${idx}`} className="option-item">
-                                                    <div className="input-container">
-                                                        {item.type === "SHORT_ANSWER" ? (
-                                                            <input
-                                                                className="short-answer"
-                                                                placeholder="Short answer"
-                                                                value={opt.option}
-                                                                onChange={(e) => updateOption(qid, idx, e.target.value)}
-                                                            />
-                                                        ) : (
-                                                            <textarea
-                                                                className="long-answer"
-                                                                placeholder="Long answer"
-                                                                value={opt.option}
-                                                                onChange={(e) => updateOption(qid, idx, e.target.value)}
-                                                            ></textarea>
-                                                        )}
-                                                    </div>
+                                                <li key={qid + "" + idx} className="option-item">
+                                                    <input
+                                                        className="option-input"
+                                                        value={opt.option}
+                                                        readOnly={!opt.isOther}
+                                                        onChange={(e) => {
+                                                            if (opt.isOther) {
+                                                                return updateOption(qid, idx, e.target.value);
+                                                            }
+                                                        }}
+                                                        tabIndex={opt.isOther ? 0 : -1}
+                                                    />
                                                     <div className="chance-container">
                                                         <input
                                                             className="chance-range"
-                                                            value={opt.chance}
                                                             type="range"
                                                             min="0"
                                                             max="100"
-                                                            step={1}
-                                                            placeholder="Chance"
+                                                            value={opt.chance}
                                                             onChange={(e) => updateChance(qid, idx, e.target.value)}
                                                         />
                                                         <input
                                                             className="chance-number"
-                                                            value={opt.chance}
                                                             type="number"
                                                             min="0"
                                                             max="100"
-                                                            placeholder="Chance"
+                                                            value={opt.chance}
                                                             onChange={(e) => updateChance(qid, idx, e.target.value)}
                                                         />
                                                         <p className="chance-percentage">
-                                                            {totalChance < 1 ? "0.00" : parseFloat((opt.chance / totalChance) * 100).toFixed(2)}
+                                                            {totalChance < 1 ? "0.00" : parseFloat((opt.chance / totalChance) * 100).toFixed(2)}%
                                                         </p>
                                                     </div>
-                                                    {totalChance < 1 && item.required ? (
+                                                    {item.required && totalChance < 1 ? (
                                                         <p className="error-message">No possible option on required question</p>
-                                                    ) : opt.option === "" && opt.chance > 0 ? (
-                                                        <p className="error-message">Empty option on required question</p>
                                                     ) : null}
                                                 </li>
                                             ))}
                                         </ul>
-                                        <button type="button" className="add-option-btn" onClick={() => addOption(qid)}>
-                                            + Add Option
-                                        </button>
+                                        {item.options.find((q) => q.isOther === true) && (
+                                            <button type="button" className="add-option-btn" onClick={() => addOption(qid, item.type === "CHECKBOX" ? true : false)}>
+                                                + Add Option
+                                            </button>
+                                        )}
                                     </div>
                                 );
-                            }
-
-                            // Grid questions (same update as above for grid)
-                            else if (item.type.includes("GRID")) {
-                                return (
-                                    <div key={item.itemId} className="grid-container">
-                                        <hr className="divider" />
-                                        <h4 className="question-title">{item.title} {item.questionId}</h4>
-                                        <ul className="grid-list">
-                                            {item.questions.map((q, idx) => {
-                                                const qid = q.questionId;
-                                                const values = data[qid] || [];
-                                                const totalChance = parseFloat(values.reduce((acc, o) => acc + o.chance, 0));
-                                                return (
-                                                    <li key={qid} className="grid-item">
-                                                        <p className="question-required">{q.required ? "Required" : null}</p>
-                                                        <label className="grid-question-label">{q.title} {q.questionId}</label>
-                                                        <ul className="options-list">
-                                                            {values.map((opt, idx) => (
-                                                                <li key={`${qid}_${idx}`} className="option-item">
-                                                                    <input
-                                                                        className="grid-input"
-                                                                        value={opt.option}
-                                                                        readOnly={!opt.isOther}
-                                                                        onChange={(e) => {
-                                                                            if (opt.isOther) {
-                                                                                return updateOption(qid, idx, e.target.value);
-                                                                            }
-                                                                        }}
-                                                                        tabIndex={opt.isOther ? 0 : -1}
-                                                                    />
-                                                                    <div className="chance-container">
-                                                                        <input
-                                                                            className="chance-range"
-                                                                            value={opt.chance}
-                                                                            type="range"
-                                                                            min="0"
-                                                                            max="100"
-                                                                            placeholder="Chance"
-                                                                            onChange={(e) => updateChance(qid, idx, e.target.value)}
-                                                                        />
-                                                                        <input
-                                                                            className="chance-number"
-                                                                            value={opt.chance}
-                                                                            min="0"
-                                                                            max="100"
-                                                                            type="number"
-                                                                            placeholder="Chance"
-                                                                            onChange={(e) => updateChance(qid, idx, e.target.value)}
-                                                                        />
-                                                                        {item.type.includes("CHECKBOX") ? null : (
-                                                                            <p className="chance-percentage">
-                                                                                {totalChance < 1 ? "0.00" : parseFloat((opt.chance / totalChance) * 100).toFixed(2)}
-                                                                            </p>
-                                                                        )}
-                                                                    </div>
-                                                                    {q.required && totalChance < 1 ? (
-                                                                        <p className="error-message">No possible option on required question</p>
-                                                                    ) : null}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                        {item.options.find((q) => q.isOther === "true") && (
-                                                            <button type="button" className="add-option-btn" onClick={() => addOption(qid)}>
-                                                                + Add Option
-                                                            </button>
-                                                        )}
-                                                    </li>
-                                                );
-                                            })}
-                                        </ul>
-                                    </div>
-                                );
-                            }
-
-                            return (
-                                <div key={item.itemId} className="question-container">
-                                    <hr className="divider" />
-                                    <p className="question-required">{item.required ? "Required" : null}</p>
-                                    <h4 className="question-title">{item.title} {item.questionId}</h4>
-                                    <ul className="options-list">
-                                        {values.map((opt, idx) => (
-                                            <li key={qid + "" + idx} className="option-item">
-                                                <input
-                                                    className="option-input"
-                                                    value={opt.option}
-                                                    readOnly={!opt.isOther}
-                                                    onChange={(e) => {
-                                                        if (opt.isOther) {
-                                                            return updateOption(qid, idx, e.target.value);
-                                                        }
-                                                    }}
-                                                    tabIndex={opt.isOther ? 0 : -1}
-                                                />
-                                                <div className="chance-container">
-                                                    <input
-                                                        className="chance-range"
-                                                        type="range"
-                                                        min="0"
-                                                        max="100"
-                                                        value={opt.chance}
-                                                        onChange={(e) => updateChance(qid, idx, e.target.value)}
-                                                    />
-                                                    <input
-                                                        className="chance-number"
-                                                        type="number"
-                                                        min="0"
-                                                        max="100"
-                                                        value={opt.chance}
-                                                        onChange={(e) => updateChance(qid, idx, e.target.value)}
-                                                    />
-                                                    <p className="chance-percentage">
-                                                        {totalChance < 1 ? "0.00" : parseFloat((opt.chance / totalChance) * 100).toFixed(2)}
-                                                    </p>
-                                                </div>
-                                                {item.required && totalChance < 1 ? (
-                                                    <p className="error-message">No possible option on required question</p>
-                                                ) : null}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    {item.options.find((q) => q.isOther === true) && (
-                                        <button type="button" className="add-option-btn" onClick={() => addOption(qid, item.type === "CHECKBOX" ? true : false)}>
-                                            + Add Option
-                                        </button>
-                                    )}
+                            })}
+                            <div className="form-footer">
+                                <div className="respond-count">
+                                    <label htmlFor="">respond count: </label>
+                                    <input className="respond-count-input" type="number" min={0} max={googleUserToken} value={respondCount > googleUserToken ? 0 : respondCount} onChange={(e) => { e.target.value <= googleUserToken && e.target.value >= 1 ? setRespondCount(e.target.value) : null }} />
                                 </div>
-                            );
-                        })}
-                        <button type="submit" disabled={sendingStatus} hidden={sendingStatus} className="submit-btn">Submit</button>
-                    </form>
-
+                                <div className="respond-delay">
+                                    <label htmlFor="">delay: </label>
+                                    <select className="respond-delay-input" onChange={(e) => { setRespondDelay(e.target.value) }} >
+                                        <option value="1">1s</option>
+                                        <option value="2">2s</option>
+                                        <option value="3">3s</option>
+                                        <option value="4">4s</option>
+                                        <option value="5">5s</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <button type="submit" disabled={sendingStatus} hidden={sendingStatus} className="submit-btn">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    }
                 </div>
             </main>
+            {openModal ?
+                <CheckoutModal open={openModal} onClose={() => setOpenModal(false)} ></CheckoutModal>
+                : null
+            }
         </>
     );
 }
@@ -594,13 +691,55 @@ function weightedPick(options, isRequired = false) {
     return options[0];
 }
 
-function pickAll(data) {
+function pickAll(data, items, genderRatio) {
     const result = {};
+
+    const MALE_OPTION = "L"
+    const FEMALE_OPTION = "P"
+    const genderRatioValue = genderRatio * 0.01
+    const fakerGender = Math.random() < genderRatioValue ? MALE_OPTION : FEMALE_OPTION
+    const fakerName = FakerGen.person.fullName({ sex: fakerGender == FEMALE_OPTION ? 'female' : 'male' })
+    const fakerCity = FakerGen.location.city()
 
     for (const [qid, options] of Object.entries(data)) {
         // per entry
         const isIndependent = options.some(opt => opt.independentChance === true);
         const isRequired = options.some(opt => opt.isRequired === true);
+        const useFaker = options.some(opt => opt.faker != false);
+
+        if (useFaker) {
+            const faker = options[0].faker;
+
+            if (faker == "city") {
+                result[qid] = [{ option: fakerCity, chance: 100 }]
+                continue
+            }
+            if (faker == "name") {
+                result[qid] = [{ option: fakerName, chance: 100 }]
+                continue
+            }
+            if (faker == "gender") {
+                const type = items.find((i) => i.questionId == qid).type
+                const optionMale = data[qid].find((e) => {
+                    const opt = e.option.toLowerCase().trim()
+                    return opt.startsWith('la') || opt.startsWith('pr') || opt.startsWith('ma') || ""
+                })
+                const optionFemale = data[qid].find((e) => {
+                    const opt = e.option.toLowerCase().trim()
+                    return opt.startsWith('pe') || opt.startsWith('wa') || opt.startsWith('fe') || ""
+                })
+                let fakerGenderValue
+                if(type == "PARAGRAPH" || type == "SHORT_ANSWER"){
+                    fakerGenderValue = fakerGender == "L" ? "Laki-Laki" : "Perempuan"
+                }else{
+                    fakerGenderValue = fakerGender == "L" ? optionMale.option : optionFemale.option
+                }
+
+                result[qid] = [{ option: fakerGenderValue, chance: 100 }]
+                continue
+            }
+
+        }
 
         // Handle independent options separately
         if (isIndependent) {
@@ -628,6 +767,7 @@ function pickAll(data) {
             const picked = [weightedPick(options)];
             result[qid] = picked;
         }
+
     }
 
     return result;

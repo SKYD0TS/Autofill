@@ -66,13 +66,13 @@ export async function POST(req) {
         },
       });
       tokenPurchaseData.voucher_usage_id = voucherUsage.id
+      price = price - (price * (voucher.discount_percentage/100))
     }
     tokenPurchase = await prisma.tokenPurchase.create({
       data: tokenPurchaseData,
     });
   })
-
-  price = price - (price * (voucher.discount_percentage/100))
+  
 
   const transaction_details = {
     order_id: tokenPurchase.purchase_id,

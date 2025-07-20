@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import '@/components/modal.css'
 import { createPortal } from "react-dom"
 
-export default function CheckoutModal({ open, onClose, qty=1}) {
+export default function CheckoutModal({ open, onClose, qty = 1 }) {
   const [quantity, setQuantity] = useState(1)
   const [voucher, setVoucher] = useState("")
   const [discount, setDiscount] = useState(0)
@@ -72,6 +72,10 @@ export default function CheckoutModal({ open, onClose, qty=1}) {
   }
 
   async function handleGetTransactionToken(order_id) {
+    if(quantity < 1){
+      alert(`tidak bisa membeli token dengan jumlah ${quantity}`)
+      return
+    }
     const snapTokenFetch = await fetch("/api/checkout/get-token", {
       method: "POST",
       body: JSON.stringify({ order_id })
@@ -134,7 +138,18 @@ export default function CheckoutModal({ open, onClose, qty=1}) {
                 >
                   <div className="transaction-details">
                     <span>Token: {transaction.token_amount} - Rp.{transaction.purchase_amount}</span>
-                    <span className="transaction-date">{transaction.purchase_date}</span>
+                    <span className="transaction-date">{new Date(transaction.purchase_date).toLocaleString("local", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      timeZone: "UTC",
+                      timeZoneName: "short"
+                    })
+                    }</span>
                   </div>
                   {transaction.purchase_status === "unpaid" && (
                     <button className="open-btn"
