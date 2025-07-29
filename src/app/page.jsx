@@ -63,9 +63,9 @@ function Home() {
                 <div className="header">
                     <nav className="nav">
                         {/* <a href="/Tutorial_Autofill.pdf" target="_blank">Tutorial</a> */}
-                        <a onClick={()=>{setIsPDFModalOpen(true)}}>Tutorial</a>
+                        <a className="tutorial-button" onClick={()=>{setIsPDFModalOpen(true)}}>Tutorial</a>
                         <div className="dropdown"><a href="#pricelist">Pricelist</a></div>
-                        <div className="dropdown">Socials</div>
+                        <div className="dropdown"><a href="#socials">Socials</a></div>
                     </nav>
                     <div className="logo">
                         <a href="/">
@@ -119,9 +119,9 @@ function Home() {
                          formInputIsValid === 3 ? "Unauthorized" :
                          formInputIsValid === 4 ? "Please log-in" : null}
                     </p>
-                    <div className="arrow-down">
+                    {/* <div className="arrow-down">
                         <a href="#features"><i data-feather="circle"></i></a>
-                    </div>
+                    </div> */}
                 </main>
             </div>
             
@@ -193,16 +193,15 @@ function Home() {
                         </div>
                     </section>
                     <footer className="footer">
-                        <div className="footer-logo"><img src="/images/mark-black.png" /></div>
+                        <div className="footer-logo"><img src="/images/submark-black.png" /></div>
                         <div className="footer-links">
                             <a href="#pricelist">Pricelist</a>
                             <a href="#home">Home</a>
                             <a href="#faq">FAQ</a>
                         </div>
-                        <div className="socials">
-                            <a href="#"><img src="/images/social-icons/autofill-instagram-icon.svg" height={32} /></a>
-                            <a href="#"><img src="/images/social-icons/autofill-whatsapp-icon.svg " height={32} /></a>
-                            <a href="#"><img src="/images/social-icons/autofill-x-icon.svg" height={32} /></a>
+                        <div className="socials" id={"socials"}>
+                            <a href="https://www.instagram.com/autofill.id?igsh=MXAxeGd1ejU1amFxbQ=="><img src="/images/social-icons/autofill-instagram-icon.svg" height={32} /></a>
+                            <a href="https://wa.me/message/5HOPHQGRGFWJF1"><img src="/images/social-icons/autofill-whatsapp-icon.svg " height={32} /></a>
                         </div>
                         <p>© 2025 AUTOFILL ALL RIGHTS RESERVED</p>
                     </footer>
