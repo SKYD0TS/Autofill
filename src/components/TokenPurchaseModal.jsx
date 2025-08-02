@@ -40,24 +40,50 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
   }, [quantity])
 
   async function handleSubmit() {
+    if (!window.snap) {
+      console.error("Midtrans Snap is not loaded yet");
+      alert("Payment system is not ready. Please try again later.");
+      return;
+    }
+
     const data = {
       quantity,
       price,
       voucher_code: voucher,
       email: session?.user.email,
-    }
+    };
 
     const response = await fetch("/api/checkout/create-transaction", {
       method: "POST",
-      body: JSON.stringify(data)
-    })
-    const tokenFetch = await response.json()
+      body: JSON.stringify(data),
+    });
+    const tokenFetch = await response.json();
     if (tokenFetch.success) {
-      getTransactions()
-      window.snap.pay(tokenFetch.token)
+      getTransactions();
+      window.snap.pay(tokenFetch.token);
     } else {
-      console.log(tokenFetch.error)
+      console.log(tokenFetch.error);
     }
+  }
+
+  async function handleGetTransactionToken(order_id) {
+    if (quantity < 1) {
+      alert(`Tidak bisa membeli token dengan jumlah ${quantity}`);
+      return;
+    }
+    if (!window.snap) {
+      console.error("Midtrans Snap is not loaded yet");
+      alert("Payment system is not ready. Please try again later.");
+      return;
+    }
+
+    const snapTokenFetch = await fetch("/api/checkout/get-token", {
+      method: "POST",
+      body: JSON.stringify({ order_id }),
+    });
+    const snapToken = await snapTokenFetch.json();
+    console.log(snapToken);
+    window.snap.pay(snapToken.token);
   }
 
   async function handleVoucher() {
@@ -72,7 +98,7 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
   }
 
   async function handleGetTransactionToken(order_id) {
-    if(quantity < 1){
+    if (quantity < 1) {
       alert(`tidak bisa membeli token dengan jumlah ${quantity}`)
       return
     }
@@ -85,13 +111,23 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
   }
 
   useEffect(() => {
-    const script = document.createElement("script")
-    script.src = process.env.MT_SCRIPT_SRC
-    script.setAttribute("data-client-key", process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY)
-    script.async = true
-    document.body.appendChild(script)
-    return () => document.body.removeChild(script)
-  }, [])
+    if (!window.snap) {
+      const script = document.createElement("script");
+      script.src = process.env.NEXT_PUBLIC_MT_SCRIPT_SRC;
+      script.setAttribute("data-client-key", process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY);
+      script.async = true;
+      script.onload = () => {
+        console.log("Midtrans Snap script loaded successfully");
+      };
+      script.onerror = () => {
+        console.error("Failed to load Midtrans Snap script");
+      };
+      document.body.appendChild(script);
+      return () => {
+        document.body.removeChild(script);
+      };
+    }
+  }, []);
 
   if (!open) return null
 

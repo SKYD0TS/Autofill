@@ -5,7 +5,7 @@ export async function POST(req) {
 
     if (notif.transaction_status === "settlement") {
         const order = await prisma.tokenPurchase.findUnique({
-            where: { purchase_id: notif.order_id },
+            where: { purchase_id: parseInt(notif.order_id) },
         });
         const newOrder = await prisma.tokenPurchase.update({
             where: { purchase_id: order.purchase_id },

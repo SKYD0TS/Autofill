@@ -30,7 +30,7 @@ export async function POST(req) {
         }
       }
 
-    const tokenFetch = await fetch(process.env.MT_TRANSACTIONS_API, {
+    const tokenFetch = await fetch(process.env.NEXT_PUBLIC_MT_TRANSACTIONS_API, {
       headers: { 
         "Content-type": "application/json",
         "Accept": "application/json",
