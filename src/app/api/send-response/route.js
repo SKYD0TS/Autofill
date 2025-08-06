@@ -18,7 +18,7 @@ export async function POST(req) {
     });
     let successCount = 0
     const fetchPromises = urls.map(async (url, index) => {
-      return await delayFn(delay * 1000 * index).then(() => {
+      return await delayFn(delay * 1000 * index).then(async () => {
 
         return fetch(url)
           .then(res => {
@@ -35,7 +35,7 @@ export async function POST(req) {
           });
       });
     })
-    await Promise.all(fetchPromises).then(async ()=>{
+    await Promise.all(fetchPromises).then(async () => {
       const newTokenCount = token.token_count - successCount
       const newToken = await prisma.token.update({
         where: { token_id: token.token_id },
@@ -45,7 +45,7 @@ export async function POST(req) {
         }
       })
     })
-    
+
 
     // Wait for all requests to complete
     const results = await Promise.all(fetchPromises);
@@ -60,7 +60,7 @@ export async function POST(req) {
     }
 
     // If all requests succeeded
-    return NextResponse.json({ message: 'All requests succeeded',sentResponse:urls.length }, { status: 200 });
+    return NextResponse.json({ message: 'All requests succeeded', sentResponse: urls.length }, { status: 200 });
   } catch (error) {
     console.error('Error in fetchData API route:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

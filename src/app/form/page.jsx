@@ -242,6 +242,7 @@ function Home() {
             return acc;
         }, {});
         let urls = []
+        console.log(respondCount, typeof respondCount)
         if (!invalidForm) {
             for (let r = 0; r < respondCount; r++) {
                 const pickedUrl = generatePickedURL(pickAll(formInputData, items, genderRatio), responderUri, formurl);
@@ -601,11 +602,12 @@ function Home() {
                                 <div className="respond-delay">
                                     <label htmlFor="">Delay: </label>
                                     <select className="respond-delay-input" onChange={(e) => { setRespondDelay(e.target.value) }} >
-                                        <option value="1">1s</option>
                                         <option value="2">2s</option>
-                                        <option value="3">3s</option>
-                                        <option value="4">4s</option>
                                         <option value="5">5s</option>
+                                        <option value="10">10s</option>
+                                        <option value="30">30s</option>
+                                        <option value="60">1m</option>
+                                        <option value="300">5m</option>
                                     </select>
                                 </div>
                                 <div>
