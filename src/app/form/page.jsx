@@ -11,6 +11,7 @@ const FakerGen = new Faker({
 });
 
 import dynamic from "next/dynamic";
+import { isNull } from "lodash";
 const CheckoutModal = dynamic(
     () => import('@/components/TokenPurchaseModal'),
     { ssr: false }
@@ -126,10 +127,19 @@ function Home() {
     }, [data]);
 
     const updateChance = useCallback((qid, index, newValue) => {
+        if (isNaN(parseFloat(newValue))) {
+            setData(prev => {
+                const updated = [...prev[qid]];
+                updated[index] = { ...updated[index], chance: parseFloat(0) };
+                return { ...prev, [qid]: updated };
+            });
+            return
+        }
+        let value = newValue
         requestAnimationFrame(() => {
             setData(prev => {
                 const updated = [...prev[qid]];
-                updated[index] = { ...updated[index], chance: parseFloat(newValue) };
+                updated[index] = { ...updated[index], chance: parseFloat(value) };
                 return { ...prev, [qid]: updated };
             });
         });
@@ -221,6 +231,10 @@ function Home() {
 
     const onSubmit = async (e) => {
         e.preventDefault()
+        if(respondCount < 1 || respondCount > googleUserToken){
+            alert(`Tidak bisa mengirim ${respondCount} respons`)
+            return
+        }
         const formInputData = Object.entries(data).reduce((acc, [qid, entries]) => {
             let found = items.find((e) => {
                 if (e.type.includes("GRID")) {
@@ -352,11 +366,11 @@ function Home() {
                     </a>
                 </div>
                 <div className="logo">
-                        <a href="/">
-                            <img src="/images/mark-white.png" />
-                            <img src="/images/logo-white.png" />
-                        </a>
-                    </div>
+                    <a href="/">
+                        <img src="/images/mark-white.png" />
+                        <img src="/images/logo-white.png" />
+                    </a>
+                </div>
                 <div className="token-count">
                     <i data-feather="user"></i>
                     <p>{googleUserToken}</p>
@@ -597,7 +611,40 @@ function Home() {
                             <div className="form-footer">
                                 <div className="respond-count">
                                     <label htmlFor="">Respond Count: </label>
-                                    <input className="respond-count-input" type="number" min={0} max={googleUserToken} value={respondCount > googleUserToken ? 0 : respondCount} onChange={(e) => { e.target.value <= googleUserToken && e.target.value >= 1 ? setRespondCount(e.target.value) : null }} />
+                                    <input className="respond-count-input" type="number" min={0} max={googleUserToken}
+                                        value={respondCount > googleUserToken ? 0 : respondCount}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+
+                                            // Update state with the current input value
+                                            setRespondCount(value);
+
+                                            // Handle invalid input (non-numeric)
+                                            if (isNaN(parseInt(value))) {
+                                                setRespondCount(0); // Default to 1 if invalid
+                                                return;
+                                            }
+
+                                            // Enforce bounds
+                                            if (parseInt(value) > googleUserToken) {
+                                                setRespondCount(googleUserToken); // Upper bound
+                                                return;
+                                            }
+
+                                            if (parseInt(value) < 1) {
+                                                setRespondCount(0); // Lower bound
+                                                return;
+                                            }
+
+                                            // Handle leading zeros
+                                            if (value.match(/^(0)+/)) {
+                                                if (value.match(/^(?:0)+(?=[1-9])/)) {
+                                                    setRespondCount(value.replace(/^(?:0)+(?=[1-9])/, "")); // Remove leading zeros
+                                                } else {
+                                                    setRespondCount(1); // Default to 1 if only zeros
+                                                }
+                                            }
+                                        }} />
                                 </div>
                                 <div className="respond-delay">
                                     <label htmlFor="">Delay: </label>

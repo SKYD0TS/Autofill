@@ -40,6 +40,10 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
   }, [quantity])
 
   async function handleSubmit() {
+    if(quantity < 1 || quantity > 1000){
+      alert(`Tidak bisa membeli ${quantity} token.`)
+      return
+    }
     if (!window.snap) {
       console.error("Midtrans Snap is not loaded yet");
       alert("Payment system is not ready. Please try again later.");
@@ -47,7 +51,7 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
     }
 
     const data = {
-      quantity,
+      quantity: parseInt(quantity),
       price,
       voucher_code: voucher,
       email: session?.user.email,
@@ -145,6 +149,8 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
               <input
                 type="number"
                 value={quantity}
+                min={0}
+                max={1000}
                 onChange={(e) => handleQuantityChange(e.target.value)}
               />
             </div>
@@ -205,9 +211,24 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
   )
 
   function handleQuantityChange(value) {
-    value = parseInt(value)
-    if (isNaN(value) || value < 1) setQuantity(1)
-    else if (value > 1000) setQuantity(1000)
-    else setQuantity(value)
+    setQuantity(value)
+    if (isNaN(parseInt(value))) {
+      setQuantity(0); // Default to 1 if invalid
+      return;
+    }
+
+    // Enforce bounds
+    if (parseInt(value) > 1000) {
+      setQuantity(1000);
+      return;
+    }
+
+    if(value.match(/^(0)+/)){
+      setQuantity(value); // Default to 1 if invalid
+
+      if(value.match(/^(?:0)+(?=[1-9])/)){
+        setQuantity(value.replace(/^(?:0)+(?=[1-9])/, ""))
+      }
+    }
   }
 }
