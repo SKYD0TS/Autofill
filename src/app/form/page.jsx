@@ -11,6 +11,7 @@ const FakerGen = new Faker({
 });
 
 import dynamic from "next/dynamic";
+import { isNull } from "lodash";
 const CheckoutModal = dynamic(
     () => import('@/components/TokenPurchaseModal'),
     { ssr: false }
@@ -126,10 +127,19 @@ function Home() {
     }, [data]);
 
     const updateChance = useCallback((qid, index, newValue) => {
+        if(isNaN(parseFloat(newValue))){
+            setData(prev => {
+                const updated = [...prev[qid]];
+                updated[index] = { ...updated[index], chance: parseFloat(0) };
+                return { ...prev, [qid]: updated };
+            });
+            return
+        }
+        let value = newValue
         requestAnimationFrame(() => {
             setData(prev => {
                 const updated = [...prev[qid]];
-                updated[index] = { ...updated[index], chance: parseFloat(newValue) };
+                updated[index] = { ...updated[index], chance: parseFloat(value) };
                 return { ...prev, [qid]: updated };
             });
         });
