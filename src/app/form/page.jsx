@@ -5,7 +5,7 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import './formstyle.css';
 import feather from 'feather-icons';
 import toast from 'react-hot-toast'
-import { base, en, Faker, id_ID } from '@faker-js/faker';
+import { base, da, en, Faker, id_ID } from '@faker-js/faker';
 const FakerGen = new Faker({
     locale: [id_ID, en, base],   // tries de, then en, then base
 });
@@ -30,13 +30,30 @@ function Home() {
     const [responderUri, setResponderUri] = useState("");
     const [respondCount, setRespondCount] = useState(1);
     const [respondDelay, setRespondDelay] = useState(1);
-    const [invalidForm, setInvalidForm] = useState(false);
     const [googleUserToken, setGoogleUserToken] = useState(null);
+    const [googleUserPendingJob, setGoogleUserPendingJob] = useState(false);
     const [items, setItems] = useState([]);
     const [redirectStatus, setRedirectStatus] = useState();
     const [formurl, setformurl] = useState("");
     const router = useRouter();
     const searchParams = useSearchParams();
+
+    const fetchGoogleUserHasPendingJob = async () => {
+        try {
+            const response = await fetch(`/api/get-pending-job-status?email=${session.user.email}`);
+            if (response.ok) {
+                const { hasPendingJob } = await response.json();
+                setGoogleUserPendingJob(hasPendingJob);
+            } else {
+                const errorData = await response.json();
+                console.error(errorData.error);
+                setGoogleUserPendingJob(false);
+            }
+        } catch (error) {
+            console.error("Error fetching Google user's token:", error);
+            setGoogleUserPendingJob(false);
+        }
+    };
     const fetchGoogleUserToken = async () => {
         try {
             // Call the API route to get the token
@@ -68,6 +85,7 @@ function Home() {
 
     useEffect(() => {
         if (session?.user?.email) {
+            fetchGoogleUserHasPendingJob()
             fetchGoogleUserToken();
         }
     }, [session]);
@@ -101,30 +119,6 @@ function Home() {
             redirect('/?formurlfail=1')
         }
     }, [formData])
-
-    useEffect(() => {
-        let isInvalid = false;
-        if (Object.keys(data).length === 0) return
-
-        // Object.keys(data).forEach((item) => {
-        Object.entries(data).forEach(([item, value]) => {
-            item = value
-            const qid = item.questionId;
-            const values = data[qid] || [];
-            values.forEach((opt) => {
-                const totalChance = parseFloat(values.reduce((acc, o) => acc + o.chance, 0));
-                if (item.required && totalChance < 1) {
-                    isInvalid = true;
-                }
-
-                if (opt.option === "" && opt.chance > 0) {
-                    isInvalid = true;
-                }
-            });
-        });
-
-        setInvalidForm(isInvalid);
-    }, [data]);
 
     const updateChance = useCallback((qid, index, newValue) => {
         if (isNaN(parseFloat(newValue))) {
@@ -229,12 +223,218 @@ function Home() {
         setData(result);
     }, [items]);
 
+    // const onSubmit = async (e) => {
+    //     e.preventDefault()
+
+    //     let isInvalid = false;
+    //     if (!data || Object.keys(data).length === 0 || !items || items.length === 0) {
+    //         // Handle case where data isn't ready, maybe show an error or just prevent submit
+    //         alert("Form data is not ready yet.");
+    //         return;
+    //     }
+
+    //     for (const item of items) {
+    //         if (item.questionId !== undefined) {
+    //             const qid = item.questionId;
+    //             const questionData = data[qid];
+
+    //             if (item.required) {
+    //                 console.log("A")
+    //                 const totalChance = questionData?.reduce((sum, option) => sum + (parseFloat(option.chance) || 0), 0) ?? 0;
+    //                 if (totalChance <= 0) {
+    //                     isInvalid = true;
+    //                     console.log("A,1")
+    //                     console.warn(`Required question ${qid} has total chance 0%`);
+    //                     break; // Early exit if one is found
+    //                 }
+    //             }
+    //         } else if (item.questions && Array.isArray(item.questions)) {
+    //             for (const gridQuestion of item.questions) {
+    //                 const gridQid = gridQuestion.questionId;
+    //                 const gridQuestionData = data[gridQid];
+    //                     console.log("B")
+    //                 if (gridQuestion.required) { // Check required status on the sub-question
+    //                     const totalChance =
+    //                         gridQuestionData?.reduce((sum, option) => sum + (parseFloat(option.chance) || 0), 0) ?? 0;
+    //                     if (totalChance <= 0) {
+    //                         console.log("B, 1")
+    //                         isInvalid = true;
+    //                         console.warn(`Required grid sub-question ${gridQid} has total chance 0%`);
+    //                         break; // Early exit
+    //                     }
+    //                 }
+    //             }
+    //             if (isInvalid) break; // Early exit from outer loop too
+    //         }
+    //     }
+    //     const invalidForm = isInvalid;
+
+    //     if (isInvalid) { // Use the result of the check directly
+    //         alert("Ada form yang belum terisi dengan opsi yang mungkin terpilih (required question dengan total chance 0%).");
+    //         return; // Stop submission
+    //     }
+
+
+    //     if (respondCount < 1 || respondCount > googleUserToken) {
+    //         alert(`Tidak bisa mengirim ${respondCount} respons`)
+    //         return
+    //     }
+    //     console.log(invalidForm)
+    //     let urls = []
+    //     if (invalidForm) {
+    //         alert("ada form yang belum terisi")
+    //         return
+    //     }
+    //     return
+    //     setGoogleUserPendingJob(true)
+    //     const formInputData = Object.entries(data).reduce((acc, [qid, entries]) => {
+    //         let found = items.find((e) => {
+    //             if (e.type.includes("GRID")) {
+    //                 return e.questions.some((q) => q.questionId == qid)
+    //             } else {
+    //                 return e.questionId == qid
+    //             }
+
+    //         })
+    //         found = found.type.includes('GRID') ? found.questions.find((q) => q.questionId == qid) : found
+    //         acc[qid] = entries.map(entry => ({
+    //             option: entry.option,
+    //             chance: entry.chance,
+    //             isOther: entry.isOther || false,
+    //             independentChance: entry.independentChance || false,
+    //             isRequired: found.required ?? false,
+    //             faker: entry.faker ?? ""
+    //         }));
+    //         return acc;
+    //     }, {});
+    //     for (let r = 0; r < respondCount; r++) {
+    //         const pickedUrl = generatePickedURL(pickAll(formInputData, items, genderRatio), responderUri, formurl);
+    //         urls.push(pickedUrl)
+    //     }
+
+    //     try {
+    //         const toastId = toast.loading('Sending response...') // optional: show loading state
+    //         setSendingStatus(true)
+    //         // const response = await fetch('/api/send-response', {
+    //         const response = await fetch('/api/queue-urls', {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify({
+    //                 urls: urls,
+    //                 delay: respondDelay,
+    //                 email: session.user.email
+    //             }),
+    //         });
+
+    //         const data = await response.json();
+
+    //         if (response.ok) {
+    //             fetchGoogleUserToken()
+    //             setSendingStatus(false)
+    //             toast.success(data.message || 'Successfully sent responses!', { id: toastId })
+    //         } else {
+    //             fetchGoogleUserToken()
+    //             toast.error('Some URLs failed to respond 😢', { id: toastId })
+    //             setSendingStatus(false)
+    //             console.log(data.failedRequests)
+    //         }
+    //     } catch (error) {
+    //         toast.dismiss() // remove any pending toasts
+    //         setSendingStatus(false)
+    //         toast.error('Failed to send response 🚨')
+    //         console.log('Failed to fetch data', error)
+    //     }
+    // };
+
+
     const onSubmit = async (e) => {
-        e.preventDefault()
-        if(respondCount < 1 || respondCount > googleUserToken){
-            alert(`Tidak bisa mengirim ${respondCount} respons`)
-            return
+        e.preventDefault();
+
+        // --- Perform validation HERE, right before other checks ---
+        let InvalidForm = false;
+        let isInvalid = false;
+        const invalidReasons = []; // Optional: collect reasons for better feedback
+
+        if (!data || Object.keys(data).length === 0 || !items || items.length === 0) {
+            alert("Form data is not ready yet.");
+            return;
         }
+
+        // Create a map for quick lookup of item details by questionId
+        // This handles regular questions and grid sub-questions
+        const itemLookup = {};
+        items.forEach(item => {
+            if (item.questionId !== undefined) {
+                itemLookup[item.questionId] = item;
+            } else if (item.questions && Array.isArray(item.questions)) {
+                item.questions.forEach(subQuestion => {
+                    // Use the sub-question's own questionId for lookup
+                    itemLookup[subQuestion.questionId] = { ...subQuestion, parentItem: item }; // Include parent for type if needed
+                });
+            }
+        });
+
+        for (const [qidString, questionData] of Object.entries(data)) {
+            const qid = parseInt(qidString, 10); // Ensure qid is a number for lookup
+            const itemDetails = itemLookup[qid];
+
+            // Only validate if the corresponding item is marked as required
+            if (itemDetails && itemDetails.required) {
+                const totalChance =
+                    questionData?.reduce((sum, option) => sum + (parseFloat(option.chance) || 0), 0) ?? 0;
+
+                // --- Check 1: Total Chance is 0 ---
+                if (totalChance <= 0) {
+                    isInvalid = true;
+                    invalidReasons.push(`Required question ${qid} has total chance 0%.`);
+                    console.warn(`Required question ${qid} has total chance 0%.`);
+                    // You might want to break here if you only care about the first invalid one
+                    // break;
+                }
+                // --- Check 2: Text Question is Empty ---
+                // Check if the original item definition marks it as a text question
+                // We need to find the original item definition again to check questionText
+                let originalItemDef = items.find(i => i.questionId === qid);
+                // If not found directly, it might be a grid sub-question
+                if (!originalItemDef) {
+                    // Find the parent grid item first
+                    const parentGridItem = items.find(i =>
+                        i.questions && Array.isArray(i.questions) && i.questions.some(q => q.questionId === qid)
+                    );
+                    // Then find the specific sub-question definition within the grid
+                    if (parentGridItem) {
+                        originalItemDef = parentGridItem.questions.find(q => q.questionId === qid);
+                    }
+                }
+
+                if (originalItemDef && originalItemDef.questionText) { // It's a text question
+                    // Check if the stored option value is empty or just whitespace
+                    const textValue = questionData[0]?.option?.trim(); // Assuming text questions store data in the first option slot
+                    if (textValue === "" || textValue === null || textValue === undefined) {
+                        isInvalid = true;
+                        invalidReasons.push(`Required text question ${qid} is empty.`);
+                        console.warn(`Required text question ${qid} is empty.`);
+                        // break; // Optional: stop checking on first invalid text question too
+                    }
+                }
+                if (isInvalid) break;
+            }
+        }
+
+        InvalidForm = isInvalid;
+
+        if (respondCount < 1 || respondCount > googleUserToken) {
+            alert(`Tidak bisa mengirim ${respondCount} respons`);
+            return;
+        }
+        if (isInvalid) { // Use the result of the check directly
+            alert("Ada form yang belum terisi dengan opsi yang mungkin terpilih (required question dengan total chance 0%).");
+            return; // Stop submission
+        }
+
+        setGoogleUserPendingJob(true);
         const formInputData = Object.entries(data).reduce((acc, [qid, entries]) => {
             let found = items.find((e) => {
                 if (e.type.includes("GRID")) {
@@ -255,22 +455,17 @@ function Home() {
             }));
             return acc;
         }, {});
-        let urls = []
-        console.log(respondCount, typeof respondCount)
-        if (!invalidForm) {
-            for (let r = 0; r < respondCount; r++) {
-                const pickedUrl = generatePickedURL(pickAll(formInputData, items, genderRatio), responderUri, formurl);
-                urls.push(pickedUrl)
-            }
-        } else {
-            alert("ada form yang belum terisi")
-            return
+
+        let urls = [];
+        for (let r = 0; r < respondCount; r++) {
+            const pickedUrl = generatePickedURL(pickAll(formInputData, items, genderRatio), responderUri, formurl);
+            urls.push(pickedUrl);
         }
 
         try {
-            const toastId = toast.loading('Sending response...') // optional: show loading state
-            setSendingStatus(true)
-            const response = await fetch('/api/send-response', {
+            const toastId = toast.loading('Sending response...');
+            setSendingStatus(true);
+            const response = await fetch('/api/queue-urls', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -281,26 +476,25 @@ function Home() {
                     email: session.user.email
                 }),
             });
-
             const data = await response.json();
-
             if (response.ok) {
-                fetchGoogleUserToken()
-                setSendingStatus(false)
-                toast.success(data.message || 'Successfully sent responses!', { id: toastId })
+                fetchGoogleUserToken();
+                setSendingStatus(false);
+                toast.success(data.message || 'Successfully sent responses!', { id: toastId });
             } else {
-                fetchGoogleUserToken()
-                toast.error('Some URLs failed to respond 😢', { id: toastId })
-                setSendingStatus(false)
-                console.log(data.failedRequests)
+                fetchGoogleUserToken();
+                toast.error('Some URLs failed to respond 😢', { id: toastId });
+                setSendingStatus(false);
+                console.log(data.failedRequests);
             }
         } catch (error) {
-            toast.dismiss() // remove any pending toasts
-            setSendingStatus(false)
-            toast.error('Failed to send response 🚨')
-            console.log('Failed to fetch data', error)
+            toast.dismiss();
+            setSendingStatus(false);
+            toast.error('Failed to send response 🚨');
+            console.log('Failed to fetch data', error);
         }
     };
+
 
     function handleFakerSelect(id, faker) {
         const isTextQuestion = items.find((i) => i.questionId == id).questionText ? true : false
@@ -658,7 +852,7 @@ function Home() {
                                     </select>
                                 </div>
                                 <div>
-                                    <button type="submit" disabled={sendingStatus} hidden={sendingStatus} className="submit-btn">Submit</button>
+                                    <button type="submit" disabled={googleUserPendingJob} hidden={googleUserPendingJob} className="submit-btn">Submit</button>
                                 </div>
                             </div>
                         </form>
