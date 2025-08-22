@@ -1,42 +1,38 @@
-// /app/api/queue-urls/route.js  (Next.js App Router style)
-import prisma from "@/app/lib/prisma";
+import { db } from "@/app/lib/db-helpers";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 export async function POST(req) {
   try {
-    const { urls, email, delay = 1000 } = await req.json();
+    const session = await getServerSession(authOptions)
+    const email = session.user.email
+    const { urls, delay = 1000 } = await req.json();
+
     if (!Array.isArray(urls) || urls.length === 0) {
       return NextResponse.json({ error: "Invalid URLs array" }, { status: 400 });
     }
 
-    const googleUser = await prisma.googleUser.findFirst({ where: { email } });
-    
-    if(googleUser.hasPendingJob){
-      return NextResponse.json({ error: "User still have unsent response" }, { status: 400 });
-    }
+    const googleUser = await db.findOne('google_user', { email });
+
     if (!googleUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    await prisma.googleUser.update({
-      where: {id: googleUser.id},
-      data: {
-        hasPendingJob: true
-      }
-    })
+    if (googleUser.has_pending_job) {
+      return NextResponse.json({ error: "User still have unsent response" }, { status: 400 });
+    }
+    await db.updateOne("google_user", { id: googleUser.id }, {
+      has_pending_job: true
+    });
 
-    const token = await prisma.token.findFirst({ where: { token_id: googleUser.id } });
+
+    const token = await db.findOne("token", { token_id: googleUser.id });
     if (!token) {
       return NextResponse.json({ error: "Token record not found" }, { status: 404 });
     }
 
-    // Count already-pending jobs for this user (treat them as reserved)
-    const pendingCount = await prisma.job.count({
-      where: {
-        email,
-        status: { in: ["pending", "processing"] },
-      },
-    });
-
+    const pendingCount = (await db.findMany("job", { email, status: "pending" })).length;
+    console.log({pendingCount})
     const available = token.token_count - pendingCount;
     if (available < urls.length) {
       return NextResponse.json({
@@ -48,15 +44,24 @@ export async function POST(req) {
 
     // Create job rows (staggered runAt by delay)
     const now = new Date();
-    const jobs = urls.map((u, i) => ({
-      url: u,
+    const jobs = urls.map((u, i) => [
+      u,
       email,
-      runAt: new Date(now.getTime() + delay * 1000 * i),
-      status: "pending",
-    }));
+      new Date(now.getTime() + delay * 1000 * i),
+      "pending"
+    ]);
 
-    // Use createMany for speed
-    await prisma.job.createMany({ data: jobs });
+    // Prepare a single bulk INSERT
+    if (jobs.length > 0) {
+      const placeholders = jobs.map(() => "(?, ?, ?, ?)").join(", ");
+      const flatValues = jobs.flat();
+
+      await db.query(
+        `INSERT INTO job (url, email, run_at, status) VALUES ${placeholders}`,
+        flatValues
+      );
+    }
+
 
     return NextResponse.json({ message: "URLs queued", queued: urls.length }, { status: 200 });
   } catch (err) {

@@ -1,7 +1,8 @@
+import { db } from "@/app/lib/db-helpers";
 import Midtrans from "midtrans-client";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import prisma from "@/app/lib/prisma";
-import { PurchaseStatus } from "@prisma/client";
+import { authOptions } from "../../auth/[...nextauth]/route";
 
 // Initialize Midtrans Snap client
 const snap = new Midtrans.Snap({
@@ -11,9 +12,11 @@ const snap = new Midtrans.Snap({
 });
 
 export async function POST(req) {
+  const session = await getServerSession(authOptions)
+  const email = session.user.email
   try {
     // 1. Extract and validate request body
-    const { quantity, email, voucher_code } = await req.json();
+    const { quantity, voucher_code } = await req.json();
 
     if (!quantity || !email || quantity <= 0) {
       return NextResponse.json({ error: "Invalid input: quantity and email are required." }, { status: 400 });
@@ -30,9 +33,7 @@ export async function POST(req) {
     }
 
     // 3. Fetch user and voucher data from the database
-    const googleUser = await prisma.googleUser.findFirst({
-      where: { email },
-    });
+    const googleUser = await db.findOne('google_user', { email });
 
     if (!googleUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -40,9 +41,7 @@ export async function POST(req) {
 
     let voucher = null;
     if (voucher_code && voucher_code.trim() !== "") {
-      voucher = await prisma.voucher.findFirst({
-        where: { voucher_code },
-      });
+      voucher = await db.findOne('voucher', { voucher_code });
     }
 
     // 4. ** CORRECTED PRICE CALCULATION **
@@ -53,7 +52,7 @@ export async function POST(req) {
     if (voucher && voucher.discount_percentage > 0) {
       const discountMultiplier = 1 - voucher.discount_percentage / 100;
       // Calculate the discounted price per item and floor it to ensure it's an integer for Midtrans.
-      finalPrice = Math.floor(basePrice * discountMultiplier);
+      finalPrice = Math.ceil(basePrice * discountMultiplier);
       // Calculate the total based on the final, consistent integer price.
       total = finalPrice * quantity;
     } else {
@@ -61,51 +60,48 @@ export async function POST(req) {
       finalPrice = basePrice;
       total = finalPrice * quantity;
     }
-    
+
     // Ensure total is not zero or negative, which can happen with a 100% discount
     if (total <= 0) {
-        // If the total is free, we don't need to go to Midtrans.
-        // You can handle the logic for a free "purchase" here.
-        // For now, we'll just return an error for simplicity.
-        return NextResponse.json({ error: "Total amount must be positive. A 100% discount cannot be processed via payment gateway." }, { status: 400 });
+      // If the total is free, we don't need to go to Midtrans.
+      // You can handle the logic for a free "purchase" here.
+      // For now, we'll just return an error for simplicity.
+      return NextResponse.json({ error: "Total amount must be positive. A 100% discount cannot be processed via payment gateway." }, { status: 400 });
     }
 
-    // 5. Create purchase records in a transaction
     let tokenPurchase;
     try {
-      await prisma.$transaction(async (tx) => {
-        let tokenPurchaseData = {
+
+      tokenPurchase = await db.transaction(async (conn) => {
+        // 1. Insert purchase
+        const purchase = await conn.insertOne("token_purchase", {
           token_amount: quantity,
           purchase_amount: total,
           google_user_id: googleUser.id,
-          purchase_status: PurchaseStatus.unpaid, // Using enum for safety
-        };
-
-        if (voucher) {
-          const voucherUsage = await tx.voucherUsage.create({
-            data: {
-              voucher_id: voucher.voucher_id,
-              google_user_id: googleUser.id,
-              used_at: new Date(),
-            },
-          });
-          tokenPurchaseData.voucher_usage_id = voucherUsage.id;
-        }
-
-        tokenPurchase = await tx.tokenPurchase.create({
-          data: tokenPurchaseData,
+          purchase_status: "unpaid",
         });
+
+        // 2. Insert voucher usage if voucher applied
+        if (voucher) {
+          await conn.insertOne("voucher_usage", {
+            voucher_id: voucher.voucher_id,
+            token_purchase_id: purchase.insertId,
+            used_at: new Date(),
+          });
+        }
+        return {purchase_id: purchase.insertId}
       });
+
     } catch (error) {
       console.error("Error in database transaction:", error);
       return NextResponse.json({ error: "Failed to create purchase record" }, { status: 500 });
     }
 
+    console.log(tokenPurchase)
     if (!tokenPurchase) {
-        console.error("Token purchase record was not created.");
-        return NextResponse.json({ error: "Failed to create purchase record" }, { status: 500 });
+      console.error("Token purchase record was not created.");
+      return NextResponse.json({ error: "Failed to create purchase record" }, { status: 500 });
     }
-
 
     // 6. Prepare parameters for Midtrans
     const transaction_details = {
@@ -126,8 +122,8 @@ export async function POST(req) {
     ];
 
     const customer_details = {
-        email: googleUser.email,
-        first_name: googleUser.name || 'Customer',
+      email: googleUser.email,
+      first_name: googleUser.name || 'Customer',
     };
 
     const parameter = {
@@ -146,7 +142,7 @@ export async function POST(req) {
     console.error("Error creating Midtrans transaction:", error);
     // Check if it's a Midtrans API error
     if (error.isMidtransError) {
-        return NextResponse.json({ error: "Midtrans API Error", details: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Midtrans API Error", details: error.message }, { status: 500 });
     }
     return NextResponse.json({ error: "An internal server error occurred" }, { status: 500 });
   }

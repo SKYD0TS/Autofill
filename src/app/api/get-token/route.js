@@ -1,10 +1,10 @@
-// pages/api/getGoogleUserToken.js
-import prisma from "@/app/lib/prisma"; // Import your Prisma client
+import { db } from "@/app/lib/db-helpers";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
 
-// app/api/get-token/route.js (App Router)
-export async function GET(request) {
-  const url = new URL(request.url);
-  const email = url.searchParams.get('email'); // Using URL API to get query parameters
+export async function POST(request) {
+  const session = await getServerSession(authOptions)
+  const email = await session.user.email
 
   if (!email) {
     return new Response(JSON.stringify({ error: "Email is required" }), {
@@ -13,9 +13,7 @@ export async function GET(request) {
   }
 
   try {
-    const googleUser = await prisma.googleUser.findFirst({
-      where: { email },
-    });
+    const googleUser = await db.findOne("google_user", { email });
 
     if (!googleUser) {
       return new Response(
@@ -24,9 +22,7 @@ export async function GET(request) {
       );
     }
 
-    const token = await prisma.token.findFirst({
-      where: { token_id: googleUser.id },
-    });
+    const token = await db.findOne("token", { token_id: googleUser.id });
 
     return new Response(
       JSON.stringify({ token_count: token?.token_count || 0 }),

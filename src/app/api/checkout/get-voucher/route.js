@@ -1,20 +1,16 @@
+import { db } from "@/app/lib/db-helpers";
 import { NextResponse } from "next/server";
-import prisma from "@/app/lib/prisma";
-
 export async function POST(req) {
     const {voucher_code} = await req.json();
 
     let voucher
     try {
-        voucher = await prisma.voucher.findFirst({
-            where: { voucher_code },
-        });
-
+        voucher = await db.findOne('voucher', {voucher_code});
     } catch (error) {
         console.error("Error fetching token:", error);
         return NextResponse.json({ error: "Internal server error", status: 500 })
     }
-    if(voucher == null){
+    if(voucher == null || voucher == undefined){
         return NextResponse.json({status:"not found",discount:0})
     }
 

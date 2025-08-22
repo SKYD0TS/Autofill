@@ -12,6 +12,7 @@ const FakerGen = new Faker({
 
 import dynamic from "next/dynamic";
 import { isNull } from "lodash";
+import JobProgress from "@/components/FormComponent/JobProgress";
 const CheckoutModal = dynamic(
     () => import('@/components/TokenPurchaseModal'),
     { ssr: false }
@@ -37,27 +38,30 @@ function Home() {
     const [formurl, setformurl] = useState("");
     const router = useRouter();
     const searchParams = useSearchParams();
+    const pendingCount = searchParams.get('pending');
 
     const fetchGoogleUserHasPendingJob = async () => {
         try {
-            const response = await fetch(`/api/get-pending-job-status?email=${session.user.email}`);
+            const response = await fetch(`/api/get-pending-job-status`);
             if (response.ok) {
                 const { hasPendingJob } = await response.json();
                 setGoogleUserPendingJob(hasPendingJob);
+                return true
             } else {
                 const errorData = await response.json();
                 console.error(errorData.error);
                 setGoogleUserPendingJob(false);
+                return false
             }
         } catch (error) {
             console.error("Error fetching Google user's token:", error);
-            setGoogleUserPendingJob(false);
+            return false
         }
     };
     const fetchGoogleUserToken = async () => {
         try {
             // Call the API route to get the token
-            const response = await fetch(`/api/get-token?email=${session.user.email}`);
+            const response = await fetch(`/api/get-token`, { method: "POST" });
             if (response.ok) {
                 const data = await response.json();
                 setGoogleUserToken(data.token_count); // Set the token count
@@ -81,7 +85,7 @@ function Home() {
         if (isClient) {
             setformurl(searchParams.get('formurl'));
         }
-    },);
+    },)
 
     useEffect(() => {
         if (session?.user?.email) {
@@ -161,6 +165,14 @@ function Home() {
             });
         }
     };
+
+    useEffect(() => {
+        const has_pending_job = googleUserPendingJob
+        fetch('/api/get-pending-job-status', {
+            method: "POST",
+            body: JSON.stringify({ has_pending_job })
+        })
+    }, [googleUserPendingJob])
 
     useEffect(() => {
         if (!items || items.length === 0) return;
@@ -315,7 +327,6 @@ function Home() {
     //     try {
     //         const toastId = toast.loading('Sending response...') // optional: show loading state
     //         setSendingStatus(true)
-    //         // const response = await fetch('/api/send-response', {
     //         const response = await fetch('/api/queue-urls', {
     //             method: 'POST',
     //             headers: {
@@ -347,7 +358,6 @@ function Home() {
     //         console.log('Failed to fetch data', error)
     //     }
     // };
-
 
     const onSubmit = async (e) => {
         e.preventDefault();
@@ -473,16 +483,20 @@ function Home() {
                 body: JSON.stringify({
                     urls: urls,
                     delay: respondDelay,
-                    email: session.user.email
                 }),
             });
             const data = await response.json();
             if (response.ok) {
-                fetchGoogleUserToken();
                 setSendingStatus(false);
-                toast.success(data.message || 'Successfully sent responses!', { id: toastId });
+                toast.success(data.message || 'Successfully queue responses!', { id: toastId });
+
+                const queryParams = new URLSearchParams(searchParams)
+                const prevPending = parseInt(queryParams.get("pending") ?? 0)
+
+                queryParams.set("pending", prevPending + urls.length)
+                router.replace(`?${queryParams.toString()}`, { scroll: false });
+
             } else {
-                fetchGoogleUserToken();
                 toast.error('Some URLs failed to respond 😢', { id: toastId });
                 setSendingStatus(false);
                 console.log(data.failedRequests);
@@ -495,6 +509,13 @@ function Home() {
         }
     };
 
+    function onQueueComplete() {
+        setGoogleUserPendingJob(false)
+        const queryParams = new URLSearchParams(searchParams)
+        queryParams.set('pending', 0)
+        router.replace(`?${queryParams.toString()}`, { scroll: false })
+        toast.success("Complete!")
+    }
 
     function handleFakerSelect(id, faker) {
         const isTextQuestion = items.find((i) => i.questionId == id).questionText ? true : false
@@ -854,6 +875,7 @@ function Home() {
                                 <div>
                                     <button type="submit" disabled={googleUserPendingJob} hidden={googleUserPendingJob} className="submit-btn">Submit</button>
                                 </div>
+                                <JobProgress pending={pendingCount} onFinished={() => { onQueueComplete() }}></JobProgress>
                             </div>
                         </form>
                     }

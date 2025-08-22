@@ -7,7 +7,7 @@
 
 :root {
   /* colors (loosely taken from the demo) */
-  --bg:            #d5e7f1;
+  --bg:            #f6f6f6;
   --surface:       #ffffff;
   --border:        #e5e5e5;
   --text-primary:  #1a1a1a;
@@ -135,9 +135,10 @@ main {
   padding: calc(var(--unit)*4) calc(var(--unit)*4);
   border-radius: var(--radius);
   transition: box-shadow 0.4s;
+  box-shadow: 0 0 4px 2px rgba(0,0,0,.1);
   &:hover{
     /* box-shadow: var(--shadow-lg); */
-    box-shadow: 0 0 10px 2px rgba(0,0,0,.1);
+    box-shadow: 0 0 16px 2px rgba(0,0,0,.1);
   }
 }
 
@@ -328,6 +329,11 @@ main {
   align-items: center;
   justify-content: space-between;
   border-top: 1px solid var(--border);
+  transition: box-shadow 0.4s;
+  box-shadow: 0 0 4px 2px rgba(0,0,0,.1);
+  &:hover{
+    box-shadow: 0 0 16px 2px rgba(0,0,0,.1);
+  }
 }
 
 .respond-count,

@@ -2,15 +2,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { db } from "@/app/lib/db-helpers";
 
-export async function POST(req) {
-  const { has_pending_job } = await req.json();
-  const session = await getServerSession(authOptions)
-  const email = await session.user.email
-
-  await db.updateOne("google_user", { email }, { has_pending_job })
-
-  return new Response(JSON.stringify({success:"success"}))
-}
 export async function GET() {
   const session = await getServerSession(authOptions)
   const email = await session.user.email
@@ -31,10 +22,10 @@ export async function GET() {
       );
     }
 
-    const hasPendingJob = googleUser.has_pending_job
+    const remainingJobs = (await db.findMany('job', { email, status:"pending" })).length;
 
     return new Response(
-      JSON.stringify({ hasPendingJob }),
+      JSON.stringify({ remainingJobs }),
       { status: 200 }
     );
   } catch (error) {

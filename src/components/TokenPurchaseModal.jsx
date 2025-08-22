@@ -23,6 +23,38 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
     setTransactions(transactionsFetch.transactions)
   }
 
+  function handleQuantityChange(value) {
+    setQuantity(value)
+    if (isNaN(parseInt(value))) {
+      setQuantity(0); // Default to 1 if invalid
+      return;
+    }
+
+    // Enforce bounds
+    if (parseInt(value) > 1000) {
+      setQuantity(1000);
+      return;
+    }
+
+    if (value.match(/^(0)+/)) {
+      setQuantity(value); // Default to 1 if invalid
+
+      if (value.match(/^(?:0)+(?=[1-9])/)) {
+        setQuantity(value.replace(/^(?:0)+(?=[1-9])/, ""))
+      }
+    }
+  }
+
+  function formatRupiah(amount) {
+    amount = String(amount).split(',')[0]
+    amount = String(amount).split('.')[0]
+    // Convert to string and remove non-digits
+    const digits = String(amount).replace(/\D/g, '');
+
+    // Format with dots every 3 digits from the right
+    return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
   useEffect(() => {
     if (session?.error) signOut({ callbackUrl: "/" })
     if (session?.user?.email) getTransactions()
@@ -40,7 +72,7 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
   }, [quantity])
 
   async function handleSubmit() {
-    if(quantity < 1 || quantity > 1000){
+    if (quantity < 1 || quantity > 1000) {
       alert(`Tidak bisa membeli ${quantity} token.`)
       return
     }
@@ -54,7 +86,6 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
       quantity: parseInt(quantity),
       price,
       voucher_code: voucher,
-      email: session?.user.email,
     };
 
     const response = await fetch("/api/checkout/create-transaction", {
@@ -68,6 +99,23 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
     } else {
       console.log(tokenFetch.error);
     }
+  }
+
+
+  async function handleVoucher() {
+    if (!voucher) {
+      setDiscount(0)
+      return
+    }
+
+    const response = await fetch("/api/checkout/get-voucher", {
+      method: "POST",
+      body: JSON.stringify({ voucher_code: voucher })
+    })
+
+    const { discount, status } = await response.json()
+    if (status === "not found") alert("voucher not found")
+    setDiscount(discount)
   }
 
   async function handleGetTransactionToken(order_id) {
@@ -88,30 +136,6 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
     const snapToken = await snapTokenFetch.json();
     console.log(snapToken);
     window.snap.pay(snapToken.token);
-  }
-
-  async function handleVoucher() {
-    if (!voucher) return
-    const response = await fetch("/api/checkout/get-voucher", {
-      method: "POST",
-      body: JSON.stringify({ voucher_code: voucher })
-    })
-    const { discount, status } = await response.json()
-    if (status === "not found") return alert("voucher not found")
-    setDiscount(discount)
-  }
-
-  async function handleGetTransactionToken(order_id) {
-    if (quantity < 1) {
-      alert(`tidak bisa membeli token dengan jumlah ${quantity}`)
-      return
-    }
-    const snapTokenFetch = await fetch("/api/checkout/get-token", {
-      method: "POST",
-      body: JSON.stringify({ order_id })
-    })
-    const snapToken = await snapTokenFetch.json()
-    window.snap.pay(snapToken.token)
   }
 
   useEffect(() => {
@@ -164,10 +188,10 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
               <button onClick={handleVoucher} className="voucher-btn">Use Voucher</button>
             </div>
             <div className="summary">
-              <p>Price per token: Rp.{price}</p>
-              <p>Subtotal: Rp.{price * quantity}</p>
+              <p>Price per token: Rp.{formatRupiah(price)}</p>
+              <p>Subtotal: Rp.{formatRupiah(price * quantity)}</p>
               {discount > 0 && <p className="discount">Discount: {discount}%</p>}
-              <p>Total: Rp.{(price * quantity) - ((price * quantity) * (discount / 100))}</p>
+              <p>Total: Rp.{formatRupiah(Math.ceil(price * (1 - discount / 100)) * quantity)}</p> {/* Match backend logic */}
             </div>
             <button onClick={handleSubmit} className="buy-btn">BUY</button>
           </div>
@@ -179,7 +203,7 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
                   className={`transaction-item ${transaction.purchase_status === "unpaid" ? "unpaid" : "paid"}`}
                 >
                   <div className="transaction-details">
-                    <span>Token: {transaction.token_amount} - Rp.{transaction.purchase_amount}</span>
+                    <span>Token: {transaction.token_amount} - Rp.{formatRupiah(transaction.purchase_amount)}</span>
                     <span className="transaction-date">{new Date(transaction.purchase_date).toLocaleString("local", {
                       weekday: "long",
                       day: "numeric",
@@ -188,7 +212,6 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
                       hour: "2-digit",
                       minute: "2-digit",
                       second: "2-digit",
-                      timeZone: "UTC",
                       timeZoneName: "short"
                     })
                     }</span>
@@ -209,26 +232,4 @@ export default function CheckoutModal({ open, onClose, qty = 1 }) {
     </div>,
     document.body
   )
-
-  function handleQuantityChange(value) {
-    setQuantity(value)
-    if (isNaN(parseInt(value))) {
-      setQuantity(0); // Default to 1 if invalid
-      return;
-    }
-
-    // Enforce bounds
-    if (parseInt(value) > 1000) {
-      setQuantity(1000);
-      return;
-    }
-
-    if(value.match(/^(0)+/)){
-      setQuantity(value); // Default to 1 if invalid
-
-      if(value.match(/^(?:0)+(?=[1-9])/)){
-        setQuantity(value.replace(/^(?:0)+(?=[1-9])/, ""))
-      }
-    }
-  }
 }

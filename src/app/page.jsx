@@ -5,6 +5,7 @@ import { Suspense, useEffect, useState } from "react";
 import LoginButton from "@/components/GoogleIO/OauthLoginButton";
 import LogoutButton from "@/components/GoogleIO/OauthLogoutButton";
 import dynamic from "next/dynamic";
+import toast from 'react-hot-toast'
 const CheckoutModal = dynamic(() => import("@/components/TokenPurchaseModal"), {
   ssr: false,
 });
@@ -25,8 +26,8 @@ function Home() {
     name: "form-input",
     value: "",
   });
-  const [formInputIsValid, setFormInputIsValid] = useState(-1); // -1 null, 0 invalid, 1 valid, 2 responder link, 3 401, 4 no session
 
+  const [formInputIsValid, setFormInputIsValid] = useState(-1); // -1 null, 0 invalid, 1 valid, 2 responder link, 3 401, 4 no session
 
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -61,168 +62,189 @@ function Home() {
     validateFormLink();
   }, [formInput, session]);
 
+  useEffect(() => {
+    if (status == "unauthenticated" && openModal == true) {
+      setOpenModal(false)
+      toast.error('Login terlebih dahulu');
+    }
+  }, [openModal])
+
+  const handleSubmit = () => {
+    if (formInputIsValid === 1) {
+      redirect(`/${FORM_PARSE_PAGE}?formurl=${formInput.value}`);
+    } else {
+      const msg =
+        formInputIsValid === 0 ? "Link invalid" :
+          formInputIsValid === 1 ? "Link valid" :
+            formInputIsValid === 2 ? "Hanya bisa link edit" :
+              formInputIsValid === 3 ? "Unauthorized" :
+                formInputIsValid === 4 ? "Please log-in" : null;
+      toast.error(msg);
+    }
+  }
+
   /* =========================================================
      RENDER
   ========================================================= */
   return (
     <div className="container">
       {/* ---------- TUTORIAL MODAL ---------- */}
-    {showTutorial && (
-  <div
-    style={{
-      position: "fixed",
-      inset: 0,
-      backgroundColor: "rgba(0,0,0,0.6)",
-      zIndex: 9999,
-      display: "flex",
-      alignItems: "flex-start",
-      justifyContent: "center",
-      padding: "2rem 0",
-      overflowY: "auto",
-    }}
-    onClick={() => setShowTutorial(false)}
-  >
-    <div
-      style={{
-        backgroundColor: "#fff",
-        color: "#000",
-        borderRadius: 12,
-        maxWidth: 640,
-        width: "90%",
-        boxShadow: "0 8px 30px rgba(0,0,0,0.3)",
-        position: "relative",
-        padding: "2.5rem 2rem",
-        marginTop: "2vh",
-      }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Close button */}
-      <button
-        style={{
-          position: "absolute",
-          top: 12,
-          right: 12,
-          background: "none",
-          border: "none",
-          fontSize: 26,
-          cursor: "pointer",
-          color: "#555",
-        }}
-        onClick={() => setShowTutorial(false)}
-      >
-        &times;
-      </button>
-
-      <h2 style={{ marginTop: 0, marginBottom: "1.2rem" }}>
-        Cara Menggunakan Autofill untuk Mengisi Google Form
-      </h2>
-
-      {/* === STEP 1 === */}
-      <h3>1. Pastikan Email Sesuai</h3>
-      <p>
-        Gunakan email yang sama saat mendaftar ke Autofill dan sebagai owner/editor Google Form.
-        Jika berbeda, tambahkan email ke Google Form sebagai editor:
-      </p>
-      <ol>
-        <li>Klik ikon <strong>“Tambah orang”</strong> di kanan atas (ikon orang dengan tanda plus ➕).</li>
-           <img
-        src="/images/tutorial/Gambar1.png"
-        alt="Langkah 1 – Tambah editor"
-        style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
-      />
-        <li>Masukkan email yang digunakan saat mendaftar ke Autofill.</li>
-           <img
-        src="/images/tutorial/Gambar2.png"
-        alt="Langkah 1 – Tambah editor"
-        style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
-      />
-        <li>Ubah akses menjadi <strong>Editor</strong>, lalu klik <strong>Kirim</strong>.</li>
-           <img
-        src="/images/tutorial/Gambar3.png"
-        alt="Langkah 1 – Tambah editor"
-        style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
-      />
-      </ol>
-      {/* === STEP 2 === */}
-      <h3>2. Hilangkan Section di GForm (Jika Ada)</h3>
-      <p>
-        Autofill tidak dapat bekerja jika form memiliki section (bagian).<br />
-        <strong>Sebelum hapus section:</strong>
-      </p>
-      <ol>
-        <li>Buat salinan Google Form terlebih dahulu sebagai cadangan.</li>
-           <img
-        src="/images/tutorial/Gambar4.png"
-        alt="Langkah 1 – Tambah editor"
-        style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
-      />
-        <li>
-          Hapus semua section:
-          <ol type="a">
-            <li>Klik titik tiga di pojok kanan atas setiap section.</li>
-            <li>Pilih <strong>“Hapus bagian”</strong>.</li>
-          </ol>
-                 <img
-        src="/images/tutorial/Gambar5.png"
-        alt="Langkah 1 – Tambah editor"
-        style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
-      />
-        </li>
-        <li>
-          Setelah pengisian selesai, Anda bisa menambahkan kembali section dari form salinan tadi.
-        </li>
-      </ol>
-
-      {/* === STEP 3 === */}
-      <h3>3. Gunakan Link Edit (Edit URL)</h3>
-      <p>
-        Pastikan Anda menggunakan link edit form, yaitu link yang mengandung <code>/edit</code> di dalam URL-nya.
-      </p>
-      <p>
-        Contoh:
-        <br />
-        <code>https://docs.google.com/forms/d/e/xxxxxxxxxxxxxxxxx/edit</code>
-      </p>
-      <p>Salin dan tempel link tersebut ke dalam kolom input di halaman Autofill.</p>
-      <img
-        src="/images/tutorial/Gambar6.png"
-        alt="Langkah 3 – Salin link edit"
-        style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
-      />
-
-      {/* === STEP 4 === */}
-      <h3>4. Setelah Autofill Selesai</h3>
-      <ul>
-        <li>Periksa jawaban responden sebelum mengembalikan section dari form salinan.</li>
-        <li>Pastikan jumlah jawaban sesuai dengan yang Anda request.</li>
-        <li>Jika sudah sesuai, kembalikan section dari salinan form yang sebelumnya Anda simpan.</li>
-      </ul>
-
-      {/* === NOTE === */}
-      <p style={{ color: "#d93025", fontWeight: "600", marginTop: "1.5rem" }}>
-        ❗ Catatan Penting
-      </p>
-      <ul style={{ color: "#d93025" }}>
-        <li>Jangan mengembalikan section sebelum mengecek jawaban responden.</li>
-        <li>Gunakan kembali salinan form untuk menyisipkan section ke posisi yang benar.</li>
-      </ul>
-
-      {/* CTA */}
-      <p style={{ marginTop: "2rem", marginBottom: 0 }}>
-        Butuh bantuan? Chat kami di{" "}
-        <a
-          href="https://wa.me/message/5HOPHQGRGFWJF1"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: "#1a73e8", fontWeight: 600 }}
+      {showTutorial && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            padding: "2rem 0",
+            overflowY: "auto",
+          }}
+          onClick={() => setShowTutorial(false)}
         >
-          WhatsApp Autofill
-        </a>
-        .
-      </p>
-    </div>
-  </div>
-)}
+          <div
+            style={{
+              backgroundColor: "#fff",
+              color: "#000",
+              borderRadius: 12,
+              maxWidth: 640,
+              width: "90%",
+              boxShadow: "0 8px 30px rgba(0,0,0,0.3)",
+              position: "relative",
+              padding: "2.5rem 2rem",
+              marginTop: "2vh",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                background: "none",
+                border: "none",
+                fontSize: 26,
+                cursor: "pointer",
+                color: "#555",
+              }}
+              onClick={() => setShowTutorial(false)}
+            >
+              &times;
+            </button>
+
+            <h2 style={{ marginTop: 0, marginBottom: "1.2rem" }}>
+              Cara Menggunakan Autofill untuk Mengisi Google Form
+            </h2>
+
+            {/* === STEP 1 === */}
+            <h3>1. Pastikan Email Sesuai</h3>
+            <p>
+              Gunakan email yang sama saat mendaftar ke Autofill dan sebagai owner/editor Google Form.
+              Jika berbeda, tambahkan email ke Google Form sebagai editor:
+            </p>
+            <ol>
+              <li>Klik ikon <strong>“Tambah orang”</strong> di kanan atas (ikon orang dengan tanda plus ➕).</li>
+              <img
+                src="/images/tutorial/Gambar1.png"
+                alt="Langkah 1 – Tambah editor"
+                style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
+              />
+              <li>Masukkan email yang digunakan saat mendaftar ke Autofill.</li>
+              <img
+                src="/images/tutorial/Gambar2.png"
+                alt="Langkah 1 – Tambah editor"
+                style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
+              />
+              <li>Ubah akses menjadi <strong>Editor</strong>, lalu klik <strong>Kirim</strong>.</li>
+              <img
+                src="/images/tutorial/Gambar3.png"
+                alt="Langkah 1 – Tambah editor"
+                style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
+              />
+            </ol>
+            {/* === STEP 2 === */}
+            <h3>2. Hilangkan Section di GForm (Jika Ada)</h3>
+            <p>
+              Autofill tidak dapat bekerja jika form memiliki section (bagian).<br />
+              <strong>Sebelum hapus section:</strong>
+            </p>
+            <ol>
+              <li>Buat salinan Google Form terlebih dahulu sebagai cadangan.</li>
+              <img
+                src="/images/tutorial/Gambar4.png"
+                alt="Langkah 1 – Tambah editor"
+                style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
+              />
+              <li>
+                Hapus semua section:
+                <ol type="a">
+                  <li>Klik titik tiga di pojok kanan atas setiap section.</li>
+                  <li>Pilih <strong>“Hapus bagian”</strong>.</li>
+                </ol>
+                <img
+                  src="/images/tutorial/Gambar5.png"
+                  alt="Langkah 1 – Tambah editor"
+                  style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
+                />
+              </li>
+              <li>
+                Setelah pengisian selesai, Anda bisa menambahkan kembali section dari form salinan tadi.
+              </li>
+            </ol>
+
+            {/* === STEP 3 === */}
+            <h3>3. Gunakan Link Edit (Edit URL)</h3>
+            <p>
+              Pastikan Anda menggunakan link edit form, yaitu link yang mengandung <code>/edit</code> di dalam URL-nya.
+            </p>
+            <p>
+              Contoh:
+              <br />
+              <code>https://docs.google.com/forms/d/e/xxxxxxxxxxxxxxxxx/edit</code>
+            </p>
+            <p>Salin dan tempel link tersebut ke dalam kolom input di halaman Autofill.</p>
+            <img
+              src="/images/tutorial/Gambar6.png"
+              alt="Langkah 3 – Salin link edit"
+              style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
+            />
+
+            {/* === STEP 4 === */}
+            <h3>4. Setelah Autofill Selesai</h3>
+            <ul>
+              <li>Periksa jawaban responden sebelum mengembalikan section dari form salinan.</li>
+              <li>Pastikan jumlah jawaban sesuai dengan yang Anda request.</li>
+              <li>Jika sudah sesuai, kembalikan section dari salinan form yang sebelumnya Anda simpan.</li>
+            </ul>
+
+            {/* === NOTE === */}
+            <p style={{ color: "#d93025", fontWeight: "600", marginTop: "1.5rem" }}>
+              ❗ Catatan Penting
+            </p>
+            <ul style={{ color: "#d93025" }}>
+              <li>Jangan mengembalikan section sebelum mengecek jawaban responden.</li>
+              <li>Gunakan kembali salinan form untuk menyisipkan section ke posisi yang benar.</li>
+            </ul>
+
+            {/* CTA */}
+            <p style={{ marginTop: "2rem", marginBottom: 0 }}>
+              Butuh bantuan? Chat kami di{" "}
+              <a
+                href="https://wa.me/message/5HOPHQGRGFWJF1"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "#1a73e8", fontWeight: 600 }}
+              >
+                WhatsApp Autofill
+              </a>
+              .
+            </p>
+          </div>
+        </div>
+      )}
       {/* ---------- TOP HALF ---------- */}
       <div className="top-half">
         <div className="header">
@@ -276,25 +298,7 @@ function Home() {
               className="form-input"
             />
             <button
-              onClick={() => {
-                if (formInputIsValid === 1) {
-                  redirect(`/${FORM_PARSE_PAGE}?formurl=${formInput.value}`);
-                } else {
-                  const msg =
-                    formInputIsValid === 0
-                      ? "Link invalid"
-                      : formInputIsValid === 1
-                      ? "Link valid"
-                      : formInputIsValid === 2
-                      ? "Hanya bisa link edit"
-                      : formInputIsValid === 3
-                      ? "Unauthorized"
-                      : formInputIsValid === 4
-                      ? "Please log-in"
-                      : null;
-                  alert(msg);
-                }
-              }}
+              onClick={() => (handleSubmit())}
             >
               Mulai
             </button>
@@ -304,14 +308,14 @@ function Home() {
             {formInputIsValid === 0
               ? "Link invalid"
               : formInputIsValid === 1
-              ? "Link valid"
-              : formInputIsValid === 2
-              ? "Hanya bisa link edit"
-              : formInputIsValid === 3
-              ? "Unauthorized"
-              : formInputIsValid === 4
-              ? "Please log-in"
-              : null}
+                ? "Link valid"
+                : formInputIsValid === 2
+                  ? "Hanya bisa link edit"
+                  : formInputIsValid === 3
+                    ? "Unauthorized"
+                    : formInputIsValid === 4
+                      ? "Please log-in"
+                      : null}
           </p>
         </main>
       </div>
@@ -465,7 +469,7 @@ function Home() {
                 alt="WhatsApp"
               />
             </a>
-             <a
+            <a
               href="https://x.com/autofillsite"
               target="_blank"
               rel="noopener noreferrer"

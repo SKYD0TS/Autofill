@@ -22,7 +22,7 @@ export default function Dropdown(){
       const fetchGoogleUserToken = async () => {
         try {
           // Call the API route to get the token
-          const response = await fetch(`/api/get-token?email=${session.user.email}`);
+          const response = await fetch(`/api/get-token?email=${session.user.email}`, {method:"POST"});
           if (response.ok) {
             const data = await response.json();
             setGoogleUserToken(data.token_count); // Set the token count
