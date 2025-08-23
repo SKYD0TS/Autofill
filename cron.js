@@ -198,7 +198,7 @@ async function processJob(job) {
     jobs.sort((a, b) => new Date(a.run_at) - new Date(b.run_at));
 
     if (jobs.length === 0) {
-      console.log("No pending jobs");
+      // console.log("No pending jobs");
     }
 
     for (const job of jobs) {
@@ -222,6 +222,6 @@ async function processJob(job) {
     await new Promise(r => setTimeout(r, BASE_CHECK_INTERVAL_MS));
   }
 
-  console.log("Worker exiting");
+  console.log(`Worker exiting, ${new Date().toISOString()}`);
   process.exit(0);
 })();

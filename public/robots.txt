@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /form
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+Disallow: /checkout
+
+Sitemap: https://autofill.site/sitemap.xml
