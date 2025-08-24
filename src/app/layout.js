@@ -40,7 +40,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="id">
       <head>
         <link rel="icon" type="image/x-icon" href="favicon.ico"></link>
       </head>

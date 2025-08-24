@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import LoginButton from "@/components/GoogleIO/OauthLoginButton";
 import LogoutButton from "@/components/GoogleIO/OauthLogoutButton";
 import dynamic from "next/dynamic";
@@ -11,16 +11,15 @@ const CheckoutModal = dynamic(() => import("@/components/TokenPurchaseModal"), {
 });
 
 import "@/app/autofill.css";
-import { redirect, useSearchParams } from "next/navigation";
+import { redirect } from "next/navigation";
 import feather from "feather-icons";
 
 const FORM_PARSE_PAGE = "form";
 
-export function Home() {
+export default function PageClient() {
   const { data: session, status } = useSession();
   const [openModal, setOpenModal] = useState(false);
   const [tokenBuyQty, setTokenBuyQty] = useState(1);
-  const searchParams = useSearchParams();
 
   const [formInput, setFormInput] = useState({
     name: "form-input",
@@ -32,7 +31,7 @@ export function Home() {
   const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
-    setFormInputIsValid(searchParams.get("formurlfail"));
+    // setFormInputIsValid(searchParams.get("formurlfail"));
     feather.replace();
   }, []);
 
@@ -149,19 +148,19 @@ export function Home() {
               <li>Klik ikon <strong>“Tambah orang”</strong> di kanan atas (ikon orang dengan tanda plus ➕).</li>
               <img
                 src="/images/tutorial/Gambar1.png"
-                alt="Langkah 1 – Tambah editor"
+                alt="Langkah 1 - Tambah editor"
                 style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
               />
               <li>Masukkan email yang digunakan saat mendaftar ke Autofill.</li>
               <img
                 src="/images/tutorial/Gambar2.png"
-                alt="Langkah 1 – Tambah editor"
+                alt="Langkah 1 - Tambah editor"
                 style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
               />
               <li>Ubah akses menjadi <strong>Editor</strong>, lalu klik <strong>Kirim</strong>.</li>
               <img
                 src="/images/tutorial/Gambar3.png"
-                alt="Langkah 1 – Tambah editor"
+                alt="Langkah 1 - Tambah editor"
                 style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
               />
             </ol>
@@ -175,7 +174,7 @@ export function Home() {
               <li>Buat salinan Google Form terlebih dahulu sebagai cadangan.</li>
               <img
                 src="/images/tutorial/Gambar4.png"
-                alt="Langkah 1 – Tambah editor"
+                alt="Langkah 1 - Tambah editor"
                 style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
               />
               <li>
@@ -186,7 +185,7 @@ export function Home() {
                 </ol>
                 <img
                   src="/images/tutorial/Gambar5.png"
-                  alt="Langkah 1 – Tambah editor"
+                  alt="Langkah 1 - Tambah editor"
                   style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
                 />
               </li>
@@ -208,7 +207,7 @@ export function Home() {
             <p>Salin dan tempel link tersebut ke dalam kolom input di halaman Autofill.</p>
             <img
               src="/images/tutorial/Gambar6.png"
-              alt="Langkah 3 – Salin link edit"
+              alt="Langkah 3 - Salin link edit"
               style={{ width: "100%", borderRadius: 8, margin: "0.5rem 0 1.5rem" }}
             />
 
@@ -496,12 +495,4 @@ export function Home() {
       ) : null}
     </div>
   );
-}
-
-export default function PageClient(){
-  return(
-    <Suspense fallback={<div className="suspense-fallback">..loading.</div>}>
-      <Home/>
-    </Suspense>
-  )
 }
